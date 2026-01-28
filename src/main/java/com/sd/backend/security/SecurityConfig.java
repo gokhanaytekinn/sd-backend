@@ -25,14 +25,17 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final UserDetailsServiceImpl userDetailsService;
+    private final String allowedOrigins;
 
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
-
-    @Value("${cors.allowed.origins}")
-    private String allowedOrigins;
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                         UserDetailsServiceImpl userDetailsService,
+                         @Value("${cors.allowed.origins}") String allowedOrigins) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.userDetailsService = userDetailsService;
+        this.allowedOrigins = allowedOrigins;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
