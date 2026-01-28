@@ -2,6 +2,8 @@ package com.sd.backend.service;
 
 import com.sd.backend.dto.TransactionRequest;
 import com.sd.backend.dto.TransactionResponse;
+import com.sd.backend.exception.ResourceNotFoundException;
+import com.sd.backend.exception.UnauthorizedException;
 import com.sd.backend.model.Subscription;
 import com.sd.backend.model.Transaction;
 import com.sd.backend.model.User;
@@ -47,10 +49,10 @@ public class TransactionService {
     @Transactional(readOnly = true)
     public TransactionResponse getTransaction(UUID id, UUID userId) {
         Transaction transaction = transactionRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Transaction not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Transaction not found"));
         
         if (!transaction.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("Unauthorized access to transaction");
+            throw new UnauthorizedException("Unauthorized access to transaction");
         }
         
         return toResponse(transaction);
@@ -59,7 +61,7 @@ public class TransactionService {
     @Transactional
     public TransactionResponse createTransaction(TransactionRequest request, UUID userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         Transaction transaction = new Transaction();
         transaction.setUser(user);
@@ -71,10 +73,10 @@ public class TransactionService {
         
         if (request.getSubscriptionId() != null) {
             Subscription subscription = subscriptionRepository.findById(request.getSubscriptionId())
-                .orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
             
             if (!subscription.getUser().getId().equals(userId)) {
-                throw new IllegalArgumentException("Unauthorized access to subscription");
+                throw new UnauthorizedException("Unauthorized access to subscription");
             }
             
             transaction.setSubscription(subscription);

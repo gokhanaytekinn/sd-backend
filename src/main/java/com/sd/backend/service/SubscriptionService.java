@@ -3,6 +3,9 @@ package com.sd.backend.service;
 import com.sd.backend.dto.FlagSuspiciousRequest;
 import com.sd.backend.dto.SubscriptionRequest;
 import com.sd.backend.dto.SubscriptionResponse;
+import com.sd.backend.exception.ResourceNotFoundException;
+import com.sd.backend.exception.UnauthorizedException;
+import com.sd.backend.exception.BadRequestException;
 import com.sd.backend.model.Subscription;
 import com.sd.backend.model.User;
 import com.sd.backend.model.enums.SubscriptionStatus;
@@ -45,10 +48,10 @@ public class SubscriptionService {
     @Transactional(readOnly = true)
     public SubscriptionResponse getSubscription(UUID id, UUID userId) {
         Subscription subscription = subscriptionRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
         
         if (!subscription.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("Unauthorized access to subscription");
+            throw new UnauthorizedException("Unauthorized access to subscription");
         }
         
         return toResponse(subscription);
@@ -57,7 +60,7 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionResponse createSubscription(SubscriptionRequest request, UUID userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         Subscription subscription = new Subscription();
         subscription.setUser(user);
@@ -82,10 +85,10 @@ public class SubscriptionService {
     @Transactional
     public void cancelSubscription(UUID id, UUID userId) {
         Subscription subscription = subscriptionRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
         
         if (!subscription.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("Unauthorized access to subscription");
+            throw new UnauthorizedException("Unauthorized access to subscription");
         }
         
         subscription.setStatus(SubscriptionStatus.CANCELLED);
@@ -106,7 +109,7 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionResponse flagAsSuspicious(UUID id, String reason) {
         Subscription subscription = subscriptionRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
         
         subscription.setIsSuspicious(true);
         subscription.setSuspiciousReason(reason);
@@ -119,7 +122,7 @@ public class SubscriptionService {
     @Transactional
     public SubscriptionResponse approveSubscription(UUID id, String approvedBy) {
         Subscription subscription = subscriptionRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Subscription not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
         
         subscription.setIsApproved(true);
         subscription.setApprovedAt(LocalDateTime.now());

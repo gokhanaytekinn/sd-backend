@@ -1,6 +1,8 @@
 package com.sd.backend.service;
 
 import com.sd.backend.dto.*;
+import com.sd.backend.exception.BadRequestException;
+import com.sd.backend.exception.UnauthorizedException;
 import com.sd.backend.model.User;
 import com.sd.backend.model.enums.UserTier;
 import com.sd.backend.repository.UserRepository;
@@ -23,7 +25,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new BadRequestException("Email already exists");
         }
         
         User user = new User();
@@ -53,10 +55,10 @@ public class AuthService {
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+            .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
         
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid credentials");
+            throw new UnauthorizedException("Invalid credentials");
         }
         
         Authentication authentication = new UsernamePasswordAuthenticationToken(

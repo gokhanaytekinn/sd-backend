@@ -3,6 +3,8 @@ package com.sd.backend.service;
 import com.sd.backend.dto.ReminderRequest;
 import com.sd.backend.dto.ReminderResponse;
 import com.sd.backend.dto.ReminderUpdateRequest;
+import com.sd.backend.exception.ResourceNotFoundException;
+import com.sd.backend.exception.UnauthorizedException;
 import com.sd.backend.model.Reminder;
 import com.sd.backend.model.User;
 import com.sd.backend.model.enums.ReminderType;
@@ -43,7 +45,7 @@ public class ReminderService {
     @Transactional
     public ReminderResponse createReminder(ReminderRequest request, UUID userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         Reminder reminder = new Reminder();
         reminder.setUser(user);
@@ -60,10 +62,10 @@ public class ReminderService {
     @Transactional
     public ReminderResponse updateReminder(UUID id, ReminderUpdateRequest request, UUID userId) {
         Reminder reminder = reminderRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Reminder not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
         
         if (!reminder.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("Unauthorized access to reminder");
+            throw new UnauthorizedException("Unauthorized access to reminder");
         }
         
         if (request.getTitle() != null) {
@@ -85,10 +87,10 @@ public class ReminderService {
     @Transactional
     public void markAsRead(UUID id, UUID userId) {
         Reminder reminder = reminderRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Reminder not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
         
         if (!reminder.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("Unauthorized access to reminder");
+            throw new UnauthorizedException("Unauthorized access to reminder");
         }
         
         reminder.setIsRead(true);
@@ -98,10 +100,10 @@ public class ReminderService {
     @Transactional
     public void deleteReminder(UUID id, UUID userId) {
         Reminder reminder = reminderRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Reminder not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
         
         if (!reminder.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("Unauthorized access to reminder");
+            throw new UnauthorizedException("Unauthorized access to reminder");
         }
         
         reminderRepository.delete(reminder);

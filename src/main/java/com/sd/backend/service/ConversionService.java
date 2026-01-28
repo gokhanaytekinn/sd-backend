@@ -2,6 +2,8 @@ package com.sd.backend.service;
 
 import com.sd.backend.dto.ConversionRequest;
 import com.sd.backend.dto.SubscriptionResponse;
+import com.sd.backend.exception.ResourceNotFoundException;
+import com.sd.backend.exception.BadRequestException;
 import com.sd.backend.model.Subscription;
 import com.sd.backend.model.Transaction;
 import com.sd.backend.model.User;
@@ -31,10 +33,10 @@ public class ConversionService {
     @Transactional
     public SubscriptionResponse convertToPremium(ConversionRequest request, UUID userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         if (user.getTier() == UserTier.PREMIUM) {
-            throw new IllegalArgumentException("User is already premium");
+            throw new BadRequestException("User is already premium");
         }
         
         Subscription subscription = new Subscription();
@@ -70,10 +72,10 @@ public class ConversionService {
     @Transactional
     public void downgradeToFree(UUID userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         if (user.getTier() == UserTier.FREE) {
-            throw new IllegalArgumentException("User is already on free tier");
+            throw new BadRequestException("User is already on free tier");
         }
         
         List<Subscription> activeSubscriptions = subscriptionRepository
