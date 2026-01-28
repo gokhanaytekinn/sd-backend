@@ -70,7 +70,7 @@ export const updateReminder = async (
 ) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
+    const { title, message, scheduledAt } = req.body;
 
     const reminder = await prisma.reminder.findFirst({
       where: {
@@ -82,6 +82,11 @@ export const updateReminder = async (
     if (!reminder) {
       throw new AppError('Reminder not found', 404);
     }
+
+    const updates: any = {};
+    if (title !== undefined) updates.title = title;
+    if (message !== undefined) updates.message = message;
+    if (scheduledAt !== undefined) updates.scheduledAt = new Date(scheduledAt);
 
     const updated = await prisma.reminder.update({
       where: { id: String(id) },

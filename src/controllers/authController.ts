@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { prisma } from '../config/database';
 import { config } from '../config';
 import { AppError } from '../middleware/errorHandler';
@@ -42,7 +42,8 @@ export const register = async (
 
     const token = jwt.sign(
       { userId: user.id, tier: user.tier },
-      config.jwt.secret
+      config.jwt.secret,
+      { expiresIn: config.jwt.expiresIn } as SignOptions
     );
 
     res.status(201).json({
@@ -75,7 +76,8 @@ export const login = async (
 
     const token = jwt.sign(
       { userId: user.id, tier: user.tier },
-      config.jwt.secret
+      config.jwt.secret,
+      { expiresIn: config.jwt.expiresIn } as SignOptions
     );
 
     res.json({
