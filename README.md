@@ -1,354 +1,124 @@
 # sd-backend
 
-Backend API for Subscription Management and Product Analysis Application
+Backend API for Subscription Management - **Java Spring Boot 3.2 with Java 17**
 
 ## Overview
 
-This is a TypeScript-based backend application built with Express.js and Prisma ORM that provides comprehensive APIs for subscription management, product analysis, and data analytics. The application supports both Free and Premium user tiers with various features including:
-
-- 🔐 User authentication and authorization
-- 💳 Subscription management (Free/Premium)
-- 🚨 Suspicious subscription detection and approval
-- 📝 Transaction list management
-- ⏰ Reminder system
-- 🔄 User conversion flows (Free to Premium)
-- 📊 Data analytics and metrics
+Production-ready Java 17 Spring Boot backend providing comprehensive APIs for subscription management, product analysis, and data analytics. Supports Free/Premium tiers with JWT authentication, suspicious activity detection, and analytics.
 
 ## Tech Stack
 
-- **Runtime:** Node.js
-- **Language:** TypeScript
-- **Framework:** Express.js
-- **Database:** PostgreSQL
-- **ORM:** Prisma
-- **Authentication:** JWT
-- **Validation:** express-validator
+- **Java 17** | **Spring Boot 3.2.1** | **Spring Security** | **Spring Data JPA**
+- **PostgreSQL** | **JWT (JJWT 0.12.3)** | **Maven** | **Lombok**
 
-## Prerequisites
+## Quick Start
 
-- Node.js (v16 or higher)
-- PostgreSQL (v12 or higher)
-- npm or yarn
-
-## Installation
-
-1. Clone the repository:
 ```bash
-git clone https://github.com/gokhanaytekinn/sd-backend.git
-cd sd-backend
+# Build
+mvn clean package
+
+# Run
+java -jar target/sd-backend-1.0.0.jar
+
+# Or use Maven
+mvn spring-boot:run
 ```
 
-2. Install dependencies:
+Access at: `http://localhost:8080`
+
+## Configuration
+
+Edit `src/main/resources/application.properties`:
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/sd_backend
+spring.datasource.username=postgres
+spring.datasource.password=your_password
+
+jwt.secret=your-secret-key-at-least-32-characters
+jwt.expiration=604800000
+```
+
+## API Endpoints
+
+**Auth** (`/api/auth`): register, login, /me  
+**Subscriptions** (`/api/subscriptions`): CRUD, suspicious flagging, approval  
+**Transactions** (`/api/transactions`): paginated history  
+**Reminders** (`/api/reminders`): CRUD notifications  
+**Conversions** (`/api/conversions`): upgrade/downgrade  
+**Analytics** (`/api/analytics`): metrics & reports  
+
+## Example Usage
+
 ```bash
-npm install
+# Register
+curl -X POST http://localhost:8080/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"pass123","name":"John"}'
+
+# Login (get JWT token)
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"pass123"}'
+
+# Create Premium Subscription
+curl -X POST http://localhost:8080/api/subscriptions \
+  -H "Authorization: ******" \
+  -H "Content-Type: application/json" \
+  -d '{"tier":"PREMIUM","amount":9.99,"currency":"USD"}'
 ```
 
-3. Set up environment variables:
-```bash
-cp .env.example .env
+## Project Structure
+
 ```
-
-Edit `.env` and configure your database connection and JWT secret:
-```env
-PORT=3000
-NODE_ENV=development
-DATABASE_URL="postgresql://user:password@localhost:5432/sd_backend?schema=public"
-JWT_SECRET=your-secret-key-here
-JWT_EXPIRES_IN=7d
-CORS_ORIGIN=http://localhost:3000
+com.sd.backend/
+├── controller/      # 6 REST Controllers (24 endpoints)
+├── service/        # 6 Service classes
+├── repository/     # 4 JPA Repositories
+├── model/          # 4 Entities + 5 Enums
+├── dto/            # 13 DTOs
+├── security/       # JWT + Spring Security Config
+└── exception/      # Global error handling
 ```
-
-4. Generate Prisma client:
-```bash
-npm run prisma:generate
-```
-
-5. Run database migrations:
-```bash
-npm run prisma:migrate
-```
-
-## Running the Application
-
-### Development Mode
-```bash
-npm run dev
-```
-
-### Production Mode
-```bash
-npm run build
-npm start
-```
-
-## API Documentation
-
-### Base URL
-```
-http://localhost:3000/api
-```
-
-### Authentication
-
-#### Register
-```http
-POST /api/auth/register
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "name": "John Doe"
-}
-```
-
-#### Login
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
-
-#### Get Current User
-```http
-GET /api/auth/me
-Authorization: Bearer {token}
-```
-
-### Subscriptions
-
-#### Get All Subscriptions
-```http
-GET /api/subscriptions
-Authorization: Bearer {token}
-Query Parameters: ?status=ACTIVE&isSuspicious=false
-```
-
-#### Get Subscription by ID
-```http
-GET /api/subscriptions/:id
-Authorization: Bearer {token}
-```
-
-#### Create Subscription
-```http
-POST /api/subscriptions
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "tier": "PREMIUM",
-  "amount": 9.99,
-  "currency": "USD",
-  "billingCycle": "MONTHLY"
-}
-```
-
-#### Cancel Subscription
-```http
-PATCH /api/subscriptions/:id/cancel
-Authorization: Bearer {token}
-```
-
-#### Get Suspicious Subscriptions
-```http
-GET /api/subscriptions/suspicious
-Authorization: Bearer {token}
-```
-
-#### Flag Subscription as Suspicious
-```http
-PATCH /api/subscriptions/:id/flag
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "reason": "Unusual payment pattern detected"
-}
-```
-
-#### Approve Subscription
-```http
-PATCH /api/subscriptions/:id/approve
-Authorization: Bearer {token}
-```
-
-### Transactions
-
-#### Get All Transactions
-```http
-GET /api/transactions
-Authorization: Bearer {token}
-Query Parameters: ?type=SUBSCRIPTION_PAYMENT&status=COMPLETED&page=1&limit=10
-```
-
-#### Get Transaction by ID
-```http
-GET /api/transactions/:id
-Authorization: Bearer {token}
-```
-
-#### Create Transaction
-```http
-POST /api/transactions
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "subscriptionId": "uuid",
-  "type": "SUBSCRIPTION_PAYMENT",
-  "amount": 9.99,
-  "currency": "USD",
-  "description": "Monthly subscription payment"
-}
-```
-
-### Reminders
-
-#### Get All Reminders
-```http
-GET /api/reminders
-Authorization: Bearer {token}
-Query Parameters: ?type=SUBSCRIPTION_RENEWAL&isRead=false
-```
-
-#### Create Reminder
-```http
-POST /api/reminders
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "type": "SUBSCRIPTION_RENEWAL",
-  "title": "Subscription Renewal",
-  "message": "Your subscription will renew in 3 days",
-  "scheduledAt": "2026-02-01T10:00:00Z"
-}
-```
-
-#### Update Reminder
-```http
-PATCH /api/reminders/:id
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "title": "Updated Title"
-}
-```
-
-#### Mark Reminder as Read
-```http
-PATCH /api/reminders/:id/read
-Authorization: Bearer {token}
-```
-
-#### Delete Reminder
-```http
-DELETE /api/reminders/:id
-Authorization: Bearer {token}
-```
-
-### User Conversions
-
-#### Upgrade to Premium
-```http
-POST /api/conversions/upgrade
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-  "amount": 9.99,
-  "currency": "USD",
-  "billingCycle": "MONTHLY"
-}
-```
-
-#### Downgrade to Free
-```http
-POST /api/conversions/downgrade
-Authorization: Bearer {token}
-```
-
-### Analytics
-
-#### Get Subscription Metrics
-```http
-GET /api/analytics/subscriptions
-Authorization: Bearer {token}
-```
-
-#### Get Revenue Metrics (Premium Only)
-```http
-GET /api/analytics/revenue
-Authorization: Bearer {token}
-```
-
-#### Get User Engagement Metrics
-```http
-GET /api/analytics/engagement
-Authorization: Bearer {token}
-```
-
-#### Get Conversion Metrics (Premium Only)
-```http
-GET /api/analytics/conversions
-Authorization: Bearer {token}
-```
-
-## Database Schema
-
-The application uses the following main entities:
-
-- **User**: User accounts with tier information (FREE/PREMIUM)
-- **Subscription**: Subscription records with status and approval workflow
-- **Transaction**: Payment and transaction history
-- **Reminder**: Notification reminders for users
 
 ## Features
 
-### Free Tier Features
-- User registration and authentication
-- View own subscriptions
-- View transaction history
-- Manage reminders
-- Basic analytics
+✅ JWT Authentication (7-day expiration)  
+✅ BCrypt Password Hashing  
+✅ Subscription Management (Free/Premium)  
+✅ Suspicious Activity Detection & Approval  
+✅ Transaction History (Paginated)  
+✅ Reminder System  
+✅ User Tier Conversions  
+✅ Analytics & Metrics  
+✅ Global Exception Handling  
+✅ Bean Validation  
 
-### Premium Tier Features
-- All Free tier features
-- Advanced analytics (revenue, conversion metrics)
-- Priority support
+## Database Schema
 
-### Admin Features
-- Flag suspicious subscriptions
-- Approve/reject subscriptions
-- View all users and subscriptions
+- **User**: Authentication, profile, tier (FREE/PREMIUM)
+- **Subscription**: Status, billing, approval workflow  
+- **Transaction**: Payment history with types & status
+- **Reminder**: Scheduled notifications
+
+All entities use UUID primary keys and include audit timestamps.
 
 ## Development
 
-### Project Structure
-```
-src/
-├── config/          # Configuration files
-├── controllers/     # Request handlers
-├── middleware/      # Express middleware
-├── routes/          # API routes
-├── services/        # Business logic
-├── types/           # TypeScript types
-└── utils/           # Utility functions
-```
+```bash
+# Build
+mvn clean install
 
-### Scripts
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run prisma:generate` - Generate Prisma client
-- `npm run prisma:migrate` - Run database migrations
+# Run tests
+mvn test
+
+# Package
+mvn clean package
+```
 
 ## License
 
 ISC
+
+---
+
+Built with ☕ Java 17 & Spring Boot 3.2
