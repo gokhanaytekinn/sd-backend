@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import * as subscriptionController from '../controllers/subscriptionController';
 import { authenticate } from '../middleware/auth';
+import { apiLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
-router.use(authenticate);
+router.use(apiLimiter, authenticate);
 
 router.get('/', subscriptionController.getSubscriptions);
 router.get('/suspicious', subscriptionController.getSuspiciousSubscriptions);

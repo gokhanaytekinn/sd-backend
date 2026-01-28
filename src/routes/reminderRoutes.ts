@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import * as reminderController from '../controllers/reminderController';
 import { authenticate } from '../middleware/auth';
+import { apiLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
-router.use(authenticate);
+router.use(apiLimiter, authenticate);
 
 router.get('/', reminderController.getReminders);
 router.post('/', reminderController.createReminder);
