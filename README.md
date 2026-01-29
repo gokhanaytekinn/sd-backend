@@ -1,6 +1,6 @@
 # sd-backend
 
-Backend API for Subscription Management - **Java Spring Boot 3.2 with Java 17**
+Backend API for Subscription Management - **Java Spring Boot 3.2 with Java 17 & MongoDB**
 
 ## Overview
 
@@ -8,8 +8,8 @@ Production-ready Java 17 Spring Boot backend providing comprehensive APIs for su
 
 ## Tech Stack
 
-- **Java 17** | **Spring Boot 3.2.1** | **Spring Security** | **Spring Data JPA**
-- **PostgreSQL** | **JWT (JJWT 0.12.3)** | **Maven** | **Lombok**
+- **Java 17** | **Spring Boot 3.2.1** | **Spring Security** | **Spring Data MongoDB**
+- **MongoDB Cloud** | **JWT (JJWT 0.12.3)** | **Maven** | **Lombok**
 
 ## Quick Start
 
@@ -26,16 +26,37 @@ mvn spring-boot:run
 
 Access at: `http://localhost:8080`
 
-## Configuration
+## MongoDB Configuration (wa-core style)
+
+The application uses MongoDB with simple URI and database name configuration:
+
+### Using Environment Variables (Recommended)
+```bash
+export MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority"
+export MONGODB_DATABASE="sd_backend"
+```
+
+### Or edit `src/main/resources/application.properties`:
+```properties
+spring.data.mongodb.uri=mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority
+spring.data.mongodb.database=sd_backend
+```
+
+### Default Configuration (Local MongoDB)
+If not configured, defaults to:
+- URI: `mongodb://localhost:27017`
+- Database: `sd_backend`
+
+## Additional Configuration
 
 Edit `src/main/resources/application.properties`:
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/sd_backend
-spring.datasource.username=postgres
-spring.datasource.password=your_password
-
+# JWT Configuration
 jwt.secret=your-secret-key-at-least-32-characters
 jwt.expiration=604800000
+
+# CORS
+cors.allowed.origins=http://localhost:3000
 ```
 
 ## API Endpoints
@@ -73,8 +94,8 @@ curl -X POST http://localhost:8080/api/subscriptions \
 com.sd.backend/
 ├── controller/      # 6 REST Controllers (24 endpoints)
 ├── service/        # 6 Service classes
-├── repository/     # 4 JPA Repositories
-├── model/          # 4 Entities + 5 Enums
+├── repository/     # 4 MongoDB Repositories
+├── model/          # 4 Documents + 5 Enums
 ├── dto/            # 13 DTOs
 ├── security/       # JWT + Spring Security Config
 └── exception/      # Global error handling
@@ -95,12 +116,13 @@ com.sd.backend/
 
 ## Database Schema
 
-- **User**: Authentication, profile, tier (FREE/PREMIUM)
-- **Subscription**: Status, billing, approval workflow  
-- **Transaction**: Payment history with types & status
-- **Reminder**: Scheduled notifications
+MongoDB Collections:
+- **users**: Authentication, profile, tier (FREE/PREMIUM)
+- **subscriptions**: Status, billing, approval workflow  
+- **transactions**: Payment history with types & status
+- **reminders**: Scheduled notifications
 
-All entities use UUID primary keys and include audit timestamps.
+All documents use MongoDB auto-generated String IDs (ObjectId).
 
 ## Development
 
@@ -115,10 +137,18 @@ mvn test
 mvn clean package
 ```
 
+## MongoDB Cloud Setup
+
+1. Create a MongoDB Atlas account at https://www.mongodb.com/cloud/atlas
+2. Create a new cluster
+3. Get your connection string (URI)
+4. Create a database named `sd_backend` (or use any name)
+5. Set environment variables or update application.properties
+
 ## License
 
 ISC
 
 ---
 
-Built with ☕ Java 17 & Spring Boot 3.2
+Built with ☕ Java 17 & Spring Boot 3.2 & 🍃 MongoDB
