@@ -6,6 +6,9 @@ import com.sd.backend.dto.SubscriptionResponse;
 import com.sd.backend.exception.BadRequestException;
 import com.sd.backend.model.enums.SubscriptionStatus;
 import com.sd.backend.service.SubscriptionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,11 +22,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/subscriptions")
 @RequiredArgsConstructor
+@Tag(name = "Subscriptions", description = "Subscription management APIs")
+@SecurityRequirement(name = "bearerAuth")
 public class SubscriptionController {
     
     private final SubscriptionService subscriptionService;
     
     @GetMapping
+    @Operation(summary = "Get user subscriptions", description = "Get all subscriptions for the authenticated user with optional filters")
     public ResponseEntity<List<SubscriptionResponse>> getSubscriptions(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(required = false) SubscriptionStatus status,
@@ -34,6 +40,7 @@ public class SubscriptionController {
     }
     
     @GetMapping("/suspicious")
+    @Operation(summary = "Get suspicious subscriptions", description = "Get all subscriptions flagged as suspicious")
     public ResponseEntity<List<SubscriptionResponse>> getSuspiciousSubscriptions() {
         List<SubscriptionResponse> subscriptions = subscriptionService.getSuspiciousSubscriptions();
         return ResponseEntity.ok(subscriptions);
