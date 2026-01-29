@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +25,7 @@ public class ReminderService {
     private final UserRepository userRepository;
     
     @Transactional(readOnly = true)
-    public List<ReminderResponse> getReminders(UUID userId, ReminderType type, Boolean isRead) {
+    public List<ReminderResponse> getReminders(String userId, ReminderType type, Boolean isRead) {
         List<Reminder> reminders;
         
         if (type != null) {
@@ -43,7 +42,7 @@ public class ReminderService {
     }
     
     @Transactional
-    public ReminderResponse createReminder(ReminderRequest request, UUID userId) {
+    public ReminderResponse createReminder(ReminderRequest request, String userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
@@ -60,7 +59,7 @@ public class ReminderService {
     }
     
     @Transactional
-    public ReminderResponse updateReminder(UUID id, ReminderUpdateRequest request, UUID userId) {
+    public ReminderResponse updateReminder(String id, ReminderUpdateRequest request, String userId) {
         Reminder reminder = reminderRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
         
@@ -85,7 +84,7 @@ public class ReminderService {
     }
     
     @Transactional
-    public void markAsRead(UUID id, UUID userId) {
+    public void markAsRead(String id, String userId) {
         Reminder reminder = reminderRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
         
@@ -98,7 +97,7 @@ public class ReminderService {
     }
     
     @Transactional
-    public void deleteReminder(UUID id, UUID userId) {
+    public void deleteReminder(String id, String userId) {
         Reminder reminder = reminderRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
         

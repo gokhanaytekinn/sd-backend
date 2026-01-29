@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,7 +28,7 @@ public class SubscriptionService {
     private final UserRepository userRepository;
     
     @Transactional(readOnly = true)
-    public List<SubscriptionResponse> getSubscriptions(UUID userId, SubscriptionStatus status, Boolean isSuspicious) {
+    public List<SubscriptionResponse> getSubscriptions(String userId, SubscriptionStatus status, Boolean isSuspicious) {
         List<Subscription> subscriptions;
         
         if (status != null) {
@@ -46,7 +45,7 @@ public class SubscriptionService {
     }
     
     @Transactional(readOnly = true)
-    public SubscriptionResponse getSubscription(UUID id, UUID userId) {
+    public SubscriptionResponse getSubscription(String id, String userId) {
         Subscription subscription = subscriptionRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
         
@@ -58,7 +57,7 @@ public class SubscriptionService {
     }
     
     @Transactional
-    public SubscriptionResponse createSubscription(SubscriptionRequest request, UUID userId) {
+    public SubscriptionResponse createSubscription(SubscriptionRequest request, String userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
@@ -83,7 +82,7 @@ public class SubscriptionService {
     }
     
     @Transactional
-    public void cancelSubscription(UUID id, UUID userId) {
+    public void cancelSubscription(String id, String userId) {
         Subscription subscription = subscriptionRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
         
@@ -107,7 +106,7 @@ public class SubscriptionService {
     }
     
     @Transactional
-    public SubscriptionResponse flagAsSuspicious(UUID id, String reason) {
+    public SubscriptionResponse flagAsSuspicious(String id, String reason) {
         Subscription subscription = subscriptionRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
         
@@ -120,7 +119,7 @@ public class SubscriptionService {
     }
     
     @Transactional
-    public SubscriptionResponse approveSubscription(UUID id, String approvedBy) {
+    public SubscriptionResponse approveSubscription(String id, String approvedBy) {
         Subscription subscription = subscriptionRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
         

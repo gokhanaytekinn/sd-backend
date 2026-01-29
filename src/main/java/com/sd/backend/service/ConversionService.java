@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +30,7 @@ public class ConversionService {
     private final TransactionRepository transactionRepository;
     
     @Transactional
-    public SubscriptionResponse convertToPremium(ConversionRequest request, UUID userId) {
+    public SubscriptionResponse convertToPremium(ConversionRequest request, String userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
@@ -70,7 +69,7 @@ public class ConversionService {
     }
     
     @Transactional
-    public void downgradeToFree(UUID userId) {
+    public void downgradeToFree(String userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         

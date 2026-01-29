@@ -10,14 +10,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionRequest {
     
-    private UUID subscriptionId;
+    private String subscriptionId;
     
     @NotNull(message = "Type is required")
     private TransactionType type;

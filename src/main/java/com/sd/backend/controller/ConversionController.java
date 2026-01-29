@@ -11,8 +11,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/conversions")
 @RequiredArgsConstructor
@@ -24,14 +22,14 @@ public class ConversionController {
     public ResponseEntity<SubscriptionResponse> convertToPremium(
             @Valid @RequestBody ConversionRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        String userId = userDetails.getUsername();
         SubscriptionResponse subscription = conversionService.convertToPremium(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(subscription);
     }
     
     @PostMapping("/downgrade")
     public ResponseEntity<Void> downgradeToFree(@AuthenticationPrincipal UserDetails userDetails) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        String userId = userDetails.getUsername();
         conversionService.downgradeToFree(userId);
         return ResponseEntity.noContent().build();
     }

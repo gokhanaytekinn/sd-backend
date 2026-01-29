@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -23,17 +22,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user;
-        try {
-            UUID userId = UUID.fromString(username);
-            user = userRepository.findById(userId)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + username));
-        } catch (IllegalArgumentException e) {
-            user = userRepository.findByEmail(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
-        }
+        user = userRepository.findById(username)
+                .orElseGet(() -> userRepository.findByEmail(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username)));
 
         return new org.springframework.security.core.userdetails.User(
-                user.getId().toString(),
+                user.getId(),
                 user.getPassword(),
                 new ArrayList<>()
         );

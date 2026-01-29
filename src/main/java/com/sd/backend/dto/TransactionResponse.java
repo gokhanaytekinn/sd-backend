@@ -8,15 +8,14 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionResponse {
-    private UUID id;
-    private UUID userId;
-    private UUID subscriptionId;
+    private String id;
+    private String userId;
+    private String subscriptionId;
     private TransactionType type;
     private TransactionStatus status;
     private BigDecimal amount;

@@ -14,7 +14,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/reminders")
@@ -28,7 +27,7 @@ public class ReminderController {
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(required = false) ReminderType type,
             @RequestParam(required = false) Boolean isRead) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        String userId = userDetails.getUsername();
         List<ReminderResponse> reminders = reminderService.getReminders(userId, type, isRead);
         return ResponseEntity.ok(reminders);
     }
@@ -37,35 +36,35 @@ public class ReminderController {
     public ResponseEntity<ReminderResponse> createReminder(
             @Valid @RequestBody ReminderRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        String userId = userDetails.getUsername();
         ReminderResponse reminder = reminderService.createReminder(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(reminder);
     }
     
     @PatchMapping("/{id}")
     public ResponseEntity<ReminderResponse> updateReminder(
-            @PathVariable UUID id,
+            @PathVariable String id,
             @Valid @RequestBody ReminderUpdateRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        String userId = userDetails.getUsername();
         ReminderResponse reminder = reminderService.updateReminder(id, request, userId);
         return ResponseEntity.ok(reminder);
     }
     
     @PatchMapping("/{id}/read")
     public ResponseEntity<Void> markAsRead(
-            @PathVariable UUID id,
+            @PathVariable String id,
             @AuthenticationPrincipal UserDetails userDetails) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        String userId = userDetails.getUsername();
         reminderService.markAsRead(id, userId);
         return ResponseEntity.noContent().build();
     }
     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReminder(
-            @PathVariable UUID id,
+            @PathVariable String id,
             @AuthenticationPrincipal UserDetails userDetails) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        String userId = userDetails.getUsername();
         reminderService.deleteReminder(id, userId);
         return ResponseEntity.noContent().build();
     }

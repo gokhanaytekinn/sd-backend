@@ -18,8 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
@@ -29,7 +27,7 @@ public class TransactionService {
     private final SubscriptionRepository subscriptionRepository;
     
     @Transactional(readOnly = true)
-    public Page<TransactionResponse> getTransactions(UUID userId, TransactionType type, 
+    public Page<TransactionResponse> getTransactions(String userId, TransactionType type, 
                                                       TransactionStatus status, Pageable pageable) {
         Page<Transaction> transactions;
         
@@ -47,7 +45,7 @@ public class TransactionService {
     }
     
     @Transactional(readOnly = true)
-    public TransactionResponse getTransaction(UUID id, UUID userId) {
+    public TransactionResponse getTransaction(String id, String userId) {
         Transaction transaction = transactionRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Transaction not found"));
         
@@ -59,7 +57,7 @@ public class TransactionService {
     }
     
     @Transactional
-    public TransactionResponse createTransaction(TransactionRequest request, UUID userId) {
+    public TransactionResponse createTransaction(TransactionRequest request, String userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         

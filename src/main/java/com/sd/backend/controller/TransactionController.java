@@ -16,8 +16,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/transactions")
 @RequiredArgsConstructor
@@ -32,7 +30,7 @@ public class TransactionController {
             @RequestParam(required = false) TransactionStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        String userId = userDetails.getUsername();
         Pageable pageable = PageRequest.of(page, size);
         Page<TransactionResponse> transactions = transactionService.getTransactions(userId, type, status, pageable);
         return ResponseEntity.ok(transactions);
@@ -40,9 +38,9 @@ public class TransactionController {
     
     @GetMapping("/{id}")
     public ResponseEntity<TransactionResponse> getTransaction(
-            @PathVariable UUID id,
+            @PathVariable String id,
             @AuthenticationPrincipal UserDetails userDetails) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        String userId = userDetails.getUsername();
         TransactionResponse transaction = transactionService.getTransaction(id, userId);
         return ResponseEntity.ok(transaction);
     }
@@ -51,7 +49,7 @@ public class TransactionController {
     public ResponseEntity<TransactionResponse> createTransaction(
             @Valid @RequestBody TransactionRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        UUID userId = UUID.fromString(userDetails.getUsername());
+        String userId = userDetails.getUsername();
         TransactionResponse transaction = transactionService.createTransaction(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(transaction);
     }
