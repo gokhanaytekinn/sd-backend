@@ -1,20 +1,20 @@
 package com.sd.backend.model;
 
 import com.sd.backend.model.enums.ReminderType;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.UUID;
 
-@Entity
-@Table(name = "reminders")
+@Document(collection = "reminders")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,40 +22,29 @@ import java.util.UUID;
 public class Reminder {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private String id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @DBRef
     private User user;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private ReminderType type;
 
-    @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false, length = 2000)
     private String message;
 
-    @Column(nullable = false)
     private LocalDateTime scheduledAt;
 
     private LocalDateTime sentAt;
 
-    @Column(nullable = false)
     private Boolean isRead = false;
 
-    @Column(columnDefinition = "TEXT")
     private String metadata;
 
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @CreatedDate
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(nullable = false)
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     @Override
