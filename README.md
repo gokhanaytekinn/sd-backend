@@ -9,7 +9,7 @@ Production-ready Java 17 Spring Boot backend providing comprehensive APIs for su
 ## Tech Stack
 
 - **Java 17** | **Spring Boot 3.2.1** | **Spring Security** | **Spring Data MongoDB**
-- **MongoDB Cloud** | **JWT (JJWT 0.12.3)** | **Maven** | **Lombok**
+- **MongoDB Cloud** | **JWT (JJWT 0.12.3)** | **Maven** | **Lombok** | **Swagger/OpenAPI**
 
 ## Quick Start
 
@@ -25,6 +25,24 @@ mvn spring-boot:run
 ```
 
 Access at: `http://localhost:8080`
+
+### 📚 API Documentation (Swagger UI)
+
+Interactive API documentation is available at:
+```
+http://localhost:8080/swagger-ui.html
+```
+
+Features:
+- 📖 Complete API documentation for all endpoints
+- 🔐 Built-in JWT authentication testing
+- ✅ Try out APIs directly from your browser
+- 📝 Request/response examples
+
+OpenAPI JSON specification:
+```
+http://localhost:8080/v3/api-docs
+```
 
 ## MongoDB Configuration (wa-core style)
 
@@ -113,6 +131,7 @@ com.sd.backend/
 ✅ Analytics & Metrics  
 ✅ Global Exception Handling  
 ✅ Bean Validation  
+✅ **Swagger/OpenAPI Documentation**  
 
 ## Database Schema
 
