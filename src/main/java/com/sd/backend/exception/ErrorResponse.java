@@ -11,7 +11,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ErrorResponse {
     
-    private int status;
-    private String message;
+    private int status;              // HTTP status code
+    private String errorCode;        // Error type code for frontend (e.g., "AUTH_001")
+    private String message;          // Detailed message for developers
+    private String userMessage;      // User-friendly message in Turkish
+    private String path;             // Request path where error occurred
     private LocalDateTime timestamp;
 }
