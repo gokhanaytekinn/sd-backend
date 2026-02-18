@@ -104,6 +104,8 @@ public class ConversionService {
         return new SubscriptionResponse(
             subscription.getId(),
             subscription.getUser().getId(),
+            subscription.getName(),
+            subscription.getIcon(),
             subscription.getStatus(),
             subscription.getTier(),
             subscription.getStartDate(),
