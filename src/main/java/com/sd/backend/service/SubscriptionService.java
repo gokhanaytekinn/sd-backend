@@ -63,20 +63,19 @@ public class SubscriptionService {
         
         Subscription subscription = new Subscription();
         subscription.setUser(user);
+        subscription.setName(request.getName());
+        subscription.setIcon(request.getIcon());
         subscription.setTier(request.getTier());
         subscription.setAmount(request.getAmount());
         subscription.setCurrency(request.getCurrency());
         subscription.setBillingCycle(request.getBillingCycle());
         subscription.setStatus(SubscriptionStatus.ACTIVE);
-        subscription.setStartDate(LocalDate.now());
-        subscription.setRenewalDate(calculateRenewalDate(request.getBillingCycle()));
+        subscription.setStartDate(request.getStartDate());
+        subscription.setRenewalDate(calculateRenewalDate(request.getStartDate(), request.getBillingCycle()));
         subscription.setIsSuspicious(false);
         subscription.setIsApproved(false);
         
         subscription = subscriptionRepository.save(subscription);
-        
-        user.setTier(request.getTier());
-        userRepository.save(user);
         
         return toResponse(subscription);
     }
@@ -132,13 +131,12 @@ public class SubscriptionService {
         return toResponse(subscription);
     }
     
-    private LocalDate calculateRenewalDate(String billingCycle) {
-        LocalDate now = LocalDate.now();
+    private LocalDate calculateRenewalDate(LocalDate startDate, String billingCycle) {
         return switch (billingCycle.toLowerCase()) {
-            case "monthly" -> now.plusMonths(1);
-            case "yearly" -> now.plusYears(1);
-            case "quarterly" -> now.plusMonths(3);
-            default -> now.plusMonths(1);
+            case "monthly" -> startDate.plusMonths(1);
+            case "yearly" -> startDate.plusYears(1);
+            case "quarterly" -> startDate.plusMonths(3);
+            default -> startDate.plusMonths(1);
         };
     }
     
@@ -146,6 +144,8 @@ public class SubscriptionService {
         return new SubscriptionResponse(
             subscription.getId(),
             subscription.getUser().getId(),
+            subscription.getName(),
+            subscription.getIcon(),
             subscription.getStatus(),
             subscription.getTier(),
             subscription.getStartDate(),

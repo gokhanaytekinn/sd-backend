@@ -10,13 +10,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubscriptionRequest {
     
-    @NotNull(message = "Tier is required")
+    @NotBlank(message = "Subscription name is required")
+    private String name;
+
+    private String icon;
+
     private UserTier tier;
     
     @NotNull(message = "Amount is required")
@@ -29,4 +34,7 @@ public class SubscriptionRequest {
     
     @NotBlank(message = "Billing cycle is required")
     private String billingCycle;
+
+    @NotNull(message = "Start date is required")
+    private LocalDate startDate;
 }

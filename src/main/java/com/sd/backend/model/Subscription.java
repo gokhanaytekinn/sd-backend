@@ -34,6 +34,10 @@ public class Subscription {
 
     private SubscriptionStatus status;
 
+    private String name;
+
+    private String icon;
+
     private UserTier tier;
 
     private LocalDate startDate;

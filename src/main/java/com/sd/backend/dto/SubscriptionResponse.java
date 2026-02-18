@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 public class SubscriptionResponse {
     private String id;
     private String userId;
+    private String name;
+    private String icon;
     private SubscriptionStatus status;
     private UserTier tier;
     private LocalDate startDate;
