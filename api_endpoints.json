@@ -124,6 +124,31 @@
         }
       ]
     },
+    "users": {
+      "description": "User management APIs",
+      "base_url": "/api/users",
+      "endpoints": [
+        {
+          "method": "PATCH",
+          "path": "/fcm-token",
+          "summary": "Update FCM Token",
+          "description": "Update the Firebase Cloud Messaging token for the current user",
+          "request": {
+            "type": "FcmTokenRequest",
+            "fields": [
+              {
+                "name": "token",
+                "type": "String",
+                "rules": [
+                  "required"
+                ]
+              }
+            ]
+          },
+          "response": null
+        }
+      ]
+    },
     "subscriptions": {
       "description": "Subscription management APIs",
       "base_url": "/api/subscriptions",
@@ -219,6 +244,10 @@
                 "type": "String"
               },
               {
+                "name": "reminderEnabled",
+                "type": "Boolean"
+              },
+              {
                 "name": "createdAt",
                 "type": "LocalDateTime"
               },
@@ -306,6 +335,16 @@
                 "rules": [
                   "required"
                 ]
+              },
+              {
+                "name": "reminderEnabled",
+                "type": "Boolean",
+                "default": false
+              },
+              {
+                "name": "reminderEnabled",
+                "type": "Boolean",
+                "default": false
               }
             ]
           },
@@ -359,6 +398,10 @@
               {
                 "name": "startDate",
                 "type": "LocalDate"
+              },
+              {
+                "name": "reminderEnabled",
+                "type": "Boolean"
               }
             ]
           },

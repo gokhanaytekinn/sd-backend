@@ -62,6 +62,8 @@ public class Subscription {
 
     private String billingCycle;
 
+    private Boolean reminderEnabled = false;
+
     @CreatedDate
     private LocalDateTime createdAt;
 
@@ -73,8 +75,10 @@ public class Subscription {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Subscription)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Subscription))
+            return false;
         Subscription that = (Subscription) o;
         return id != null && Objects.equals(id, that.id);
     }

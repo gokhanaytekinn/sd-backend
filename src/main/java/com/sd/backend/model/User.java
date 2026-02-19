@@ -32,6 +32,8 @@ public class User {
 
     private String name;
 
+    private String fcmToken;
+
     private UserTier tier = UserTier.FREE;
 
     @CreatedDate
@@ -51,8 +53,10 @@ public class User {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof User))
+            return false;
         User user = (User) o;
         return id != null && Objects.equals(id, user.id);
     }

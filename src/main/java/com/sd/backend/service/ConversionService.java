@@ -24,20 +24,20 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ConversionService {
-    
+
     private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final TransactionRepository transactionRepository;
-    
+
     @Transactional
     public SubscriptionResponse convertToPremium(ConversionRequest request, String userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         if (user.getTier() == UserTier.PREMIUM) {
             throw new BadRequestException("User is already premium");
         }
-        
+
         Subscription subscription = new Subscription();
         subscription.setUser(user);
         subscription.setTier(UserTier.PREMIUM);
@@ -49,12 +49,12 @@ public class ConversionService {
         subscription.setRenewalDate(calculateRenewalDate(request.getBillingCycle()));
         subscription.setIsSuspicious(false);
         subscription.setIsApproved(false);
-        
+
         subscription = subscriptionRepository.save(subscription);
-        
+
         user.setTier(UserTier.PREMIUM);
         userRepository.save(user);
-        
+
         Transaction transaction = new Transaction();
         transaction.setUser(user);
         transaction.setSubscription(subscription);
@@ -64,32 +64,32 @@ public class ConversionService {
         transaction.setDescription("Conversion to Premium tier");
         transaction.setStatus(TransactionStatus.COMPLETED);
         transactionRepository.save(transaction);
-        
+
         return toSubscriptionResponse(subscription);
     }
-    
+
     @Transactional
     public void downgradeToFree(String userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         if (user.getTier() == UserTier.FREE) {
             throw new BadRequestException("User is already on free tier");
         }
-        
+
         List<Subscription> activeSubscriptions = subscriptionRepository
-            .findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE);
-        
+                .findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE);
+
         for (Subscription subscription : activeSubscriptions) {
             subscription.setStatus(SubscriptionStatus.CANCELLED);
             subscription.setEndDate(LocalDate.now());
             subscriptionRepository.save(subscription);
         }
-        
+
         user.setTier(UserTier.FREE);
         userRepository.save(user);
     }
-    
+
     private LocalDate calculateRenewalDate(String billingCycle) {
         LocalDate now = LocalDate.now();
         return switch (billingCycle.toLowerCase()) {
@@ -99,28 +99,28 @@ public class ConversionService {
             default -> now.plusMonths(1);
         };
     }
-    
+
     private SubscriptionResponse toSubscriptionResponse(Subscription subscription) {
         return new SubscriptionResponse(
-            subscription.getId(),
-            subscription.getUser().getId(),
-            subscription.getName(),
-            subscription.getIcon(),
-            subscription.getStatus(),
-            subscription.getTier(),
-            subscription.getStartDate(),
-            subscription.getEndDate(),
-            subscription.getRenewalDate(),
-            subscription.getIsSuspicious(),
-            subscription.getSuspiciousReason(),
-            subscription.getIsApproved(),
-            subscription.getApprovedAt(),
-            subscription.getApprovedBy(),
-            subscription.getAmount(),
-            subscription.getCurrency(),
-            subscription.getBillingCycle(),
-            subscription.getCreatedAt(),
-            subscription.getUpdatedAt()
-        );
+                subscription.getId(),
+                subscription.getUser().getId(),
+                subscription.getName(),
+                subscription.getIcon(),
+                subscription.getStatus(),
+                subscription.getTier(),
+                subscription.getStartDate(),
+                subscription.getEndDate(),
+                subscription.getRenewalDate(),
+                subscription.getIsSuspicious(),
+                subscription.getSuspiciousReason(),
+                subscription.getIsApproved(),
+                subscription.getApprovedAt(),
+                subscription.getApprovedBy(),
+                subscription.getAmount(),
+                subscription.getCurrency(),
+                subscription.getBillingCycle(),
+                subscription.getReminderEnabled(),
+                subscription.getCreatedAt(),
+                subscription.getUpdatedAt());
     }
 }

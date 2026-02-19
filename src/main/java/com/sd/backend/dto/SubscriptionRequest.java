@@ -16,25 +16,27 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SubscriptionRequest {
-    
+
     @NotBlank(message = "Subscription name is required")
     private String name;
 
     private String icon;
 
     private UserTier tier;
-    
+
     @NotNull(message = "Amount is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Amount must be greater than 0")
     private BigDecimal amount;
-    
+
     @NotBlank(message = "Currency is required")
     @Size(min = 3, max = 3, message = "Currency must be 3 characters")
     private String currency;
-    
+
     @NotBlank(message = "Billing cycle is required")
     private String billingCycle;
 
     @NotNull(message = "Start date is required")
     private LocalDate startDate;
+
+    private Boolean reminderEnabled = false;
 }

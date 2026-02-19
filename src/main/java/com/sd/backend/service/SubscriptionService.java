@@ -75,6 +75,7 @@ public class SubscriptionService {
         subscription.setRenewalDate(calculateRenewalDate(request.getStartDate(), request.getBillingCycle()));
         subscription.setIsSuspicious(false);
         subscription.setIsApproved(false);
+        subscription.setReminderEnabled(request.getReminderEnabled() != null ? request.getReminderEnabled() : false);
 
         subscription = subscriptionRepository.save(subscription);
 
@@ -110,6 +111,9 @@ public class SubscriptionService {
         }
         if (request.getStartDate() != null) {
             subscription.setStartDate(request.getStartDate());
+        }
+        if (request.getReminderEnabled() != null) {
+            subscription.setReminderEnabled(request.getReminderEnabled());
         }
 
         // Recalculate renewal date if startDate or billingCycle changed
@@ -223,6 +227,7 @@ public class SubscriptionService {
                 subscription.getAmount(),
                 subscription.getCurrency(),
                 subscription.getBillingCycle(),
+                subscription.getReminderEnabled(),
                 subscription.getCreatedAt(),
                 subscription.getUpdatedAt());
     }

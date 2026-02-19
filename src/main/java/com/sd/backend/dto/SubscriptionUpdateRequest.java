@@ -30,4 +30,6 @@ public class SubscriptionUpdateRequest {
     private String billingCycle;
 
     private LocalDate startDate;
+
+    private Boolean reminderEnabled;
 }

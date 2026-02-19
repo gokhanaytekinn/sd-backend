@@ -31,6 +31,7 @@ public class SubscriptionResponse {
     private BigDecimal amount;
     private String currency;
     private String billingCycle;
+    private Boolean reminderEnabled;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
