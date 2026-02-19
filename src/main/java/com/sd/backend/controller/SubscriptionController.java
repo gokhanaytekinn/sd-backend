@@ -95,6 +95,16 @@ public class SubscriptionController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/{id}/reminder")
+    @Operation(summary = "Toggle reminder", description = "Toggle the reminder enabled status for a subscription")
+    public ResponseEntity<SubscriptionResponse> toggleReminder(
+            @PathVariable String id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String userId = userDetails.getUsername();
+        SubscriptionResponse subscription = subscriptionService.toggleReminder(id, userId);
+        return ResponseEntity.ok(subscription);
+    }
+
     @PatchMapping("/{id}/flag")
     public ResponseEntity<SubscriptionResponse> flagAsSuspicious(
             @PathVariable String id,

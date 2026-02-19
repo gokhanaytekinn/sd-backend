@@ -128,6 +128,23 @@ public class SubscriptionService {
     }
 
     @Transactional
+    public SubscriptionResponse toggleReminder(String id, String userId) {
+        Subscription subscription = subscriptionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+
+        if (!subscription.getUser().getId().equals(userId)) {
+            throw new UnauthorizedException("Unauthorized access to subscription");
+        }
+
+        // Toggle the value (handle nulls safely)
+        boolean currentStatus = subscription.getReminderEnabled() != null ? subscription.getReminderEnabled() : false;
+        subscription.setReminderEnabled(!currentStatus);
+
+        subscription = subscriptionRepository.save(subscription);
+        return toResponse(subscription);
+    }
+
+    @Transactional
     public void cancelSubscription(String id, String userId) {
         Subscription subscription = subscriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
