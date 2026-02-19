@@ -12,16 +12,42 @@
           "request": {
             "type": "RegisterRequest",
             "fields": [
-              {"name": "email", "type": "String", "rules": ["required", "email"]},
-              {"name": "password", "type": "String", "rules": ["required", "min:6"]},
-              {"name": "name", "type": "String", "rules": ["required"]}
+              {
+                "name": "email",
+                "type": "String",
+                "rules": [
+                  "required",
+                  "email"
+                ]
+              },
+              {
+                "name": "password",
+                "type": "String",
+                "rules": [
+                  "required",
+                  "min:6"
+                ]
+              },
+              {
+                "name": "name",
+                "type": "String",
+                "rules": [
+                  "required"
+                ]
+              }
             ]
           },
           "response": {
             "type": "AuthResponse",
             "fields": [
-              {"name": "token", "type": "String"},
-              {"name": "user", "type": "UserResponse"}
+              {
+                "name": "token",
+                "type": "String"
+              },
+              {
+                "name": "user",
+                "type": "UserResponse"
+              }
             ]
           }
         },
@@ -33,15 +59,34 @@
           "request": {
             "type": "LoginRequest",
             "fields": [
-              {"name": "email", "type": "String", "rules": ["required", "email"]},
-              {"name": "password", "type": "String", "rules": ["required"]}
+              {
+                "name": "email",
+                "type": "String",
+                "rules": [
+                  "required",
+                  "email"
+                ]
+              },
+              {
+                "name": "password",
+                "type": "String",
+                "rules": [
+                  "required"
+                ]
+              }
             ]
           },
           "response": {
             "type": "AuthResponse",
             "fields": [
-              {"name": "token", "type": "String"},
-              {"name": "user", "type": "UserResponse"}
+              {
+                "name": "token",
+                "type": "String"
+              },
+              {
+                "name": "user",
+                "type": "UserResponse"
+              }
             ]
           }
         },
@@ -54,11 +99,26 @@
           "response": {
             "type": "UserResponse",
             "fields": [
-              {"name": "id", "type": "String"},
-              {"name": "email", "type": "String"},
-              {"name": "name", "type": "String"},
-              {"name": "tier", "type": "UserTier (FREE, PREMIUM)"},
-              {"name": "createdAt", "type": "LocalDateTime"}
+              {
+                "name": "id",
+                "type": "String"
+              },
+              {
+                "name": "email",
+                "type": "String"
+              },
+              {
+                "name": "name",
+                "type": "String"
+              },
+              {
+                "name": "tier",
+                "type": "UserTier (FREE, PREMIUM)"
+              },
+              {
+                "name": "createdAt",
+                "type": "LocalDateTime"
+              }
             ]
           }
         }
@@ -74,33 +134,98 @@
           "summary": "Get user subscriptions",
           "description": "Get all subscriptions for the authenticated user with optional filters",
           "queryParams": [
-            {"name": "status", "type": "SubscriptionStatus (ACTIVE, SUSPENDED, CANCELLED, PENDING_APPROVAL)", "required": false},
-            {"name": "isSuspicious", "type": "Boolean", "required": false}
+            {
+              "name": "status",
+              "type": "SubscriptionStatus (ACTIVE, SUSPENDED, CANCELLED, PENDING_APPROVAL)",
+              "required": false
+            },
+            {
+              "name": "isSuspicious",
+              "type": "Boolean",
+              "required": false
+            }
           ],
           "request": null,
           "response": {
             "type": "List<SubscriptionResponse>",
             "itemType": "SubscriptionResponse",
             "fields": [
-              {"name": "id", "type": "String"},
-              {"name": "userId", "type": "String"},
-              {"name": "name", "type": "String"},
-              {"name": "icon", "type": "String"},
-              {"name": "status", "type": "SubscriptionStatus"},
-              {"name": "tier", "type": "UserTier"},
-              {"name": "startDate", "type": "LocalDate"},
-              {"name": "endDate", "type": "LocalDate"},
-              {"name": "renewalDate", "type": "LocalDate"},
-              {"name": "isSuspicious", "type": "Boolean"},
-              {"name": "suspiciousReason", "type": "String"},
-              {"name": "isApproved", "type": "Boolean"},
-              {"name": "approvedAt", "type": "LocalDateTime"},
-              {"name": "approvedBy", "type": "String"},
-              {"name": "amount", "type": "BigDecimal"},
-              {"name": "currency", "type": "String"},
-              {"name": "billingCycle", "type": "String"},
-              {"name": "createdAt", "type": "LocalDateTime"},
-              {"name": "updatedAt", "type": "LocalDateTime"}
+              {
+                "name": "id",
+                "type": "String"
+              },
+              {
+                "name": "userId",
+                "type": "String"
+              },
+              {
+                "name": "name",
+                "type": "String"
+              },
+              {
+                "name": "icon",
+                "type": "String"
+              },
+              {
+                "name": "status",
+                "type": "SubscriptionStatus"
+              },
+              {
+                "name": "tier",
+                "type": "UserTier"
+              },
+              {
+                "name": "startDate",
+                "type": "LocalDate"
+              },
+              {
+                "name": "endDate",
+                "type": "LocalDate"
+              },
+              {
+                "name": "renewalDate",
+                "type": "LocalDate"
+              },
+              {
+                "name": "isSuspicious",
+                "type": "Boolean"
+              },
+              {
+                "name": "suspiciousReason",
+                "type": "String"
+              },
+              {
+                "name": "isApproved",
+                "type": "Boolean"
+              },
+              {
+                "name": "approvedAt",
+                "type": "LocalDateTime"
+              },
+              {
+                "name": "approvedBy",
+                "type": "String"
+              },
+              {
+                "name": "amount",
+                "type": "BigDecimal"
+              },
+              {
+                "name": "currency",
+                "type": "String"
+              },
+              {
+                "name": "billingCycle",
+                "type": "String"
+              },
+              {
+                "name": "createdAt",
+                "type": "LocalDateTime"
+              },
+              {
+                "name": "updatedAt",
+                "type": "LocalDateTime"
+              }
             ]
           }
         },
@@ -119,7 +244,12 @@
           "method": "GET",
           "path": "/{id}",
           "summary": "Get subscription details",
-          "pathParams": [{"name": "id", "type": "String"}],
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "String"
+            }
+          ],
           "request": null,
           "response": {
             "type": "SubscriptionResponse"
@@ -132,13 +262,104 @@
           "request": {
             "type": "SubscriptionRequest",
             "fields": [
-              {"name": "name", "type": "String", "rules": ["required"]},
-              {"name": "icon", "type": "String"},
-              {"name": "tier", "type": "UserTier"},
-              {"name": "amount", "type": "BigDecimal", "rules": ["required", ">0"]},
-              {"name": "currency", "type": "String", "rules": ["required", "length:3"]},
-              {"name": "billingCycle", "type": "String", "rules": ["required"]},
-              {"name": "startDate", "type": "LocalDate", "rules": ["required"]}
+              {
+                "name": "name",
+                "type": "String",
+                "rules": [
+                  "required"
+                ]
+              },
+              {
+                "name": "icon",
+                "type": "String"
+              },
+              {
+                "name": "tier",
+                "type": "UserTier"
+              },
+              {
+                "name": "amount",
+                "type": "BigDecimal",
+                "rules": [
+                  "required",
+                  ">0"
+                ]
+              },
+              {
+                "name": "currency",
+                "type": "String",
+                "rules": [
+                  "required",
+                  "length:3"
+                ]
+              },
+              {
+                "name": "billingCycle",
+                "type": "String",
+                "rules": [
+                  "required"
+                ]
+              },
+              {
+                "name": "startDate",
+                "type": "LocalDate",
+                "rules": [
+                  "required"
+                ]
+              }
+            ]
+          },
+          "response": {
+            "type": "SubscriptionResponse"
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/{id}",
+          "summary": "Update subscription",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "String"
+            }
+          ],
+          "request": {
+            "type": "SubscriptionUpdateRequest",
+            "fields": [
+              {
+                "name": "name",
+                "type": "String"
+              },
+              {
+                "name": "icon",
+                "type": "String"
+              },
+              {
+                "name": "tier",
+                "type": "UserTier"
+              },
+              {
+                "name": "amount",
+                "type": "BigDecimal",
+                "rules": [
+                  ">0"
+                ]
+              },
+              {
+                "name": "currency",
+                "type": "String",
+                "rules": [
+                  "length:3"
+                ]
+              },
+              {
+                "name": "billingCycle",
+                "type": "String"
+              },
+              {
+                "name": "startDate",
+                "type": "LocalDate"
+              }
             ]
           },
           "response": {
@@ -149,7 +370,12 @@
           "method": "PATCH",
           "path": "/{id}/cancel",
           "summary": "Cancel subscription",
-          "pathParams": [{"name": "id", "type": "String"}],
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "String"
+            }
+          ],
           "request": null,
           "response": null
         },
@@ -157,11 +383,22 @@
           "method": "PATCH",
           "path": "/{id}/flag",
           "summary": "Flag subscription as suspicious",
-          "pathParams": [{"name": "id", "type": "String"}],
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "String"
+            }
+          ],
           "request": {
             "type": "FlagSuspiciousRequest",
             "fields": [
-              {"name": "reason", "type": "String", "rules": ["required"]}
+              {
+                "name": "reason",
+                "type": "String",
+                "rules": [
+                  "required"
+                ]
+              }
             ]
           },
           "response": {
@@ -172,7 +409,12 @@
           "method": "PATCH",
           "path": "/{id}/approve",
           "summary": "Approve subscription",
-          "pathParams": [{"name": "id", "type": "String"}],
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "String"
+            }
+          ],
           "request": null,
           "response": {
             "type": "SubscriptionResponse"
@@ -188,25 +430,66 @@
           "path": "",
           "summary": "Get reminders",
           "queryParams": [
-             {"name": "type", "type": "ReminderType (SUBSCRIPTION_RENEWAL, PAYMENT_DUE, TRIAL_ENDING, SUSPICIOUS_ACTIVITY)", "required": false},
-             {"name": "isRead", "type": "Boolean", "required": false}
+            {
+              "name": "type",
+              "type": "ReminderType (SUBSCRIPTION_RENEWAL, PAYMENT_DUE, TRIAL_ENDING, SUSPICIOUS_ACTIVITY)",
+              "required": false
+            },
+            {
+              "name": "isRead",
+              "type": "Boolean",
+              "required": false
+            }
           ],
           "request": null,
           "response": {
             "type": "List<ReminderResponse>",
             "itemType": "ReminderResponse",
             "fields": [
-              {"name": "id", "type": "String"},
-              {"name": "userId", "type": "String"},
-              {"name": "type", "type": "ReminderType"},
-              {"name": "title", "type": "String"},
-              {"name": "message", "type": "String"},
-              {"name": "scheduledAt", "type": "LocalDateTime"},
-              {"name": "sentAt", "type": "LocalDateTime"},
-              {"name": "isRead", "type": "Boolean"},
-              {"name": "metadata", "type": "String"},
-              {"name": "createdAt", "type": "LocalDateTime"},
-              {"name": "updatedAt", "type": "LocalDateTime"}
+              {
+                "name": "id",
+                "type": "String"
+              },
+              {
+                "name": "userId",
+                "type": "String"
+              },
+              {
+                "name": "type",
+                "type": "ReminderType"
+              },
+              {
+                "name": "title",
+                "type": "String"
+              },
+              {
+                "name": "message",
+                "type": "String"
+              },
+              {
+                "name": "scheduledAt",
+                "type": "LocalDateTime"
+              },
+              {
+                "name": "sentAt",
+                "type": "LocalDateTime"
+              },
+              {
+                "name": "isRead",
+                "type": "Boolean"
+              },
+              {
+                "name": "metadata",
+                "type": "String"
+              },
+              {
+                "name": "createdAt",
+                "type": "LocalDateTime"
+              },
+              {
+                "name": "updatedAt",
+                "type": "LocalDateTime"
+              }
             ]
           }
         },
@@ -217,10 +500,35 @@
           "request": {
             "type": "ReminderRequest",
             "fields": [
-              {"name": "type", "type": "ReminderType", "rules": ["required"]},
-              {"name": "title", "type": "String", "rules": ["required"]},
-              {"name": "message", "type": "String", "rules": ["required"]},
-              {"name": "scheduledAt", "type": "LocalDateTime", "rules": ["required", "future"]}
+              {
+                "name": "type",
+                "type": "ReminderType",
+                "rules": [
+                  "required"
+                ]
+              },
+              {
+                "name": "title",
+                "type": "String",
+                "rules": [
+                  "required"
+                ]
+              },
+              {
+                "name": "message",
+                "type": "String",
+                "rules": [
+                  "required"
+                ]
+              },
+              {
+                "name": "scheduledAt",
+                "type": "LocalDateTime",
+                "rules": [
+                  "required",
+                  "future"
+                ]
+              }
             ]
           },
           "response": {
@@ -231,13 +539,30 @@
           "method": "PATCH",
           "path": "/{id}",
           "summary": "Update reminder",
-          "pathParams": [{"name": "id", "type": "String"}],
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "String"
+            }
+          ],
           "request": {
             "type": "ReminderUpdateRequest",
             "fields": [
-              {"name": "title", "type": "String"},
-              {"name": "message", "type": "String"},
-              {"name": "scheduledAt", "type": "LocalDateTime", "rules": ["future"]}
+              {
+                "name": "title",
+                "type": "String"
+              },
+              {
+                "name": "message",
+                "type": "String"
+              },
+              {
+                "name": "scheduledAt",
+                "type": "LocalDateTime",
+                "rules": [
+                  "future"
+                ]
+              }
             ]
           },
           "response": {
@@ -248,7 +573,12 @@
           "method": "PATCH",
           "path": "/{id}/read",
           "summary": "Mark reminder as read",
-          "pathParams": [{"name": "id", "type": "String"}],
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "String"
+            }
+          ],
           "request": null,
           "response": null
         },
@@ -256,7 +586,12 @@
           "method": "DELETE",
           "path": "/{id}",
           "summary": "Delete reminder",
-          "pathParams": [{"name": "id", "type": "String"}],
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "String"
+            }
+          ],
           "request": null,
           "response": null
         }
@@ -270,20 +605,51 @@
           "path": "",
           "summary": "Get transactions",
           "queryParams": [
-            {"name": "type", "type": "TransactionType (SUBSCRIPTION_PAYMENT, REFUND, UPGRADE, DOWNGRADE)", "required": false},
-            {"name": "status", "type": "TransactionStatus (COMPLETED, PENDING, FAILED, REFUNDED)", "required": false},
-            {"name": "page", "type": "int", "default": 0},
-            {"name": "size", "type": "int", "default": 10}
+            {
+              "name": "type",
+              "type": "TransactionType (SUBSCRIPTION_PAYMENT, REFUND, UPGRADE, DOWNGRADE)",
+              "required": false
+            },
+            {
+              "name": "status",
+              "type": "TransactionStatus (COMPLETED, PENDING, FAILED, REFUNDED)",
+              "required": false
+            },
+            {
+              "name": "page",
+              "type": "int",
+              "default": 0
+            },
+            {
+              "name": "size",
+              "type": "int",
+              "default": 10
+            }
           ],
           "request": null,
           "response": {
             "type": "Page<TransactionResponse>",
             "fields": [
-              {"name": "content", "type": "List<TransactionResponse>"},
-              {"name": "totalPages", "type": "int"},
-              {"name": "totalElements", "type": "long"},
-              {"name": "size", "type": "int"},
-              {"name": "number", "type": "int"}
+              {
+                "name": "content",
+                "type": "List<TransactionResponse>"
+              },
+              {
+                "name": "totalPages",
+                "type": "int"
+              },
+              {
+                "name": "totalElements",
+                "type": "long"
+              },
+              {
+                "name": "size",
+                "type": "int"
+              },
+              {
+                "name": "number",
+                "type": "int"
+              }
             ]
           }
         },
@@ -291,22 +657,60 @@
           "method": "GET",
           "path": "/{id}",
           "summary": "Get transaction details",
-          "pathParams": [{"name": "id", "type": "String"}],
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "String"
+            }
+          ],
           "request": null,
           "response": {
             "type": "TransactionResponse",
-             "fields": [
-              {"name": "id", "type": "String"},
-              {"name": "userId", "type": "String"},
-              {"name": "subscriptionId", "type": "String"},
-              {"name": "type", "type": "TransactionType"},
-              {"name": "status", "type": "TransactionStatus"},
-              {"name": "amount", "type": "BigDecimal"},
-              {"name": "currency", "type": "String"},
-              {"name": "description", "type": "String"},
-              {"name": "metadata", "type": "String"},
-              {"name": "createdAt", "type": "LocalDateTime"},
-              {"name": "updatedAt", "type": "LocalDateTime"}
+            "fields": [
+              {
+                "name": "id",
+                "type": "String"
+              },
+              {
+                "name": "userId",
+                "type": "String"
+              },
+              {
+                "name": "subscriptionId",
+                "type": "String"
+              },
+              {
+                "name": "type",
+                "type": "TransactionType"
+              },
+              {
+                "name": "status",
+                "type": "TransactionStatus"
+              },
+              {
+                "name": "amount",
+                "type": "BigDecimal"
+              },
+              {
+                "name": "currency",
+                "type": "String"
+              },
+              {
+                "name": "description",
+                "type": "String"
+              },
+              {
+                "name": "metadata",
+                "type": "String"
+              },
+              {
+                "name": "createdAt",
+                "type": "LocalDateTime"
+              },
+              {
+                "name": "updatedAt",
+                "type": "LocalDateTime"
+              }
             ]
           }
         },
@@ -317,11 +721,37 @@
           "request": {
             "type": "TransactionRequest",
             "fields": [
-              {"name": "subscriptionId", "type": "String"},
-              {"name": "type", "type": "TransactionType", "rules": ["required"]},
-              {"name": "amount", "type": "BigDecimal", "rules": ["required", ">0"]},
-              {"name": "currency", "type": "String", "rules": ["required", "length:3"]},
-              {"name": "description", "type": "String"}
+              {
+                "name": "subscriptionId",
+                "type": "String"
+              },
+              {
+                "name": "type",
+                "type": "TransactionType",
+                "rules": [
+                  "required"
+                ]
+              },
+              {
+                "name": "amount",
+                "type": "BigDecimal",
+                "rules": [
+                  "required",
+                  ">0"
+                ]
+              },
+              {
+                "name": "currency",
+                "type": "String",
+                "rules": [
+                  "required",
+                  "length:3"
+                ]
+              },
+              {
+                "name": "description",
+                "type": "String"
+              }
             ]
           },
           "response": {
@@ -338,28 +768,36 @@
           "path": "/subscriptions",
           "summary": "Get subscription metrics",
           "request": null,
-          "response": {"type": "Map<String, Object>"}
+          "response": {
+            "type": "Map<String, Object>"
+          }
         },
         {
           "method": "GET",
           "path": "/revenue",
           "summary": "Get revenue metrics",
           "request": null,
-          "response": {"type": "Map<String, Object>"}
+          "response": {
+            "type": "Map<String, Object>"
+          }
         },
         {
           "method": "GET",
           "path": "/engagement",
           "summary": "Get user engagement metrics",
           "request": null,
-          "response": {"type": "Map<String, Object>"}
+          "response": {
+            "type": "Map<String, Object>"
+          }
         },
         {
           "method": "GET",
           "path": "/conversions",
           "summary": "Get conversion metrics",
           "request": null,
-          "response": {"type": "Map<String, Object>"}
+          "response": {
+            "type": "Map<String, Object>"
+          }
         }
       ]
     },
@@ -373,9 +811,29 @@
           "request": {
             "type": "ConversionRequest",
             "fields": [
-              {"name": "amount", "type": "BigDecimal", "rules": ["required", ">0"]},
-              {"name": "currency", "type": "String", "rules": ["required", "length:3"]},
-              {"name": "billingCycle", "type": "String", "rules": ["required"]}
+              {
+                "name": "amount",
+                "type": "BigDecimal",
+                "rules": [
+                  "required",
+                  ">0"
+                ]
+              },
+              {
+                "name": "currency",
+                "type": "String",
+                "rules": [
+                  "required",
+                  "length:3"
+                ]
+              },
+              {
+                "name": "billingCycle",
+                "type": "String",
+                "rules": [
+                  "required"
+                ]
+              }
             ]
           },
           "response": {
@@ -393,10 +851,33 @@
     }
   },
   "enums": {
-    "UserTier": ["FREE", "PREMIUM"],
-    "SubscriptionStatus": ["ACTIVE", "SUSPENDED", "CANCELLED", "PENDING_APPROVAL"],
-    "ReminderType": ["SUBSCRIPTION_RENEWAL", "PAYMENT_DUE", "TRIAL_ENDING", "SUSPICIOUS_ACTIVITY"],
-    "TransactionType": ["SUBSCRIPTION_PAYMENT", "REFUND", "UPGRADE", "DOWNGRADE"],
-    "TransactionStatus": ["COMPLETED", "PENDING", "FAILED", "REFUNDED"]
+    "UserTier": [
+      "FREE",
+      "PREMIUM"
+    ],
+    "SubscriptionStatus": [
+      "ACTIVE",
+      "SUSPENDED",
+      "CANCELLED",
+      "PENDING_APPROVAL"
+    ],
+    "ReminderType": [
+      "SUBSCRIPTION_RENEWAL",
+      "PAYMENT_DUE",
+      "TRIAL_ENDING",
+      "SUSPICIOUS_ACTIVITY"
+    ],
+    "TransactionType": [
+      "SUBSCRIPTION_PAYMENT",
+      "REFUND",
+      "UPGRADE",
+      "DOWNGRADE"
+    ],
+    "TransactionStatus": [
+      "COMPLETED",
+      "PENDING",
+      "FAILED",
+      "REFUNDED"
+    ]
   }
 }
