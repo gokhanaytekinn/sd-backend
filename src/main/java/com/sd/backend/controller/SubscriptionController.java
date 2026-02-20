@@ -33,8 +33,8 @@ public class SubscriptionController {
     @Operation(summary = "Get user subscriptions", description = "Get all subscriptions for the authenticated user with optional filters")
     public ResponseEntity<List<SubscriptionResponse>> getSubscriptions(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam(required = false) SubscriptionStatus status,
-            @RequestParam(required = false) Boolean isSuspicious) {
+            @RequestParam(name = "status", required = false) SubscriptionStatus status,
+            @RequestParam(name = "isSuspicious", required = false) Boolean isSuspicious) {
         String userId = userDetails.getUsername();
         List<SubscriptionResponse> subscriptions = subscriptionService.getSubscriptions(userId, status, isSuspicious);
         return ResponseEntity.ok(subscriptions);
