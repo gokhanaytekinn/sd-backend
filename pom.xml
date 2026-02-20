@@ -80,6 +80,13 @@
             <version>2.3.0</version>
         </dependency>
         
+        <!-- Google API Client (GoogleIdTokenVerifier) -->
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
