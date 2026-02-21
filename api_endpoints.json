@@ -91,6 +91,37 @@
           }
         },
         {
+          "method": "POST",
+          "path": "/google",
+          "summary": "Google Sign-In",
+          "description": "Verify a Google ID token and return an app JWT. Creates a new user account if the email is not registered yet.",
+          "request": {
+            "type": "GoogleSignInRequest",
+            "fields": [
+              {
+                "name": "idToken",
+                "type": "String",
+                "rules": [
+                  "required"
+                ]
+              }
+            ]
+          },
+          "response": {
+            "type": "AuthResponse",
+            "fields": [
+              {
+                "name": "token",
+                "type": "String"
+              },
+              {
+                "name": "user",
+                "type": "UserResponse"
+              }
+            ]
+          }
+        },
+        {
           "method": "GET",
           "path": "/me",
           "summary": "Get current user",
@@ -452,6 +483,36 @@
           "method": "PATCH",
           "path": "/{id}/approve",
           "summary": "Approve subscription",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "String"
+            }
+          ],
+          "request": null,
+          "response": {
+            "type": "SubscriptionResponse"
+          }
+        },
+        {
+          "method": "PATCH",
+          "path": "/{id}/reactivate",
+          "summary": "Reactivate subscription",
+          "description": "Reactivate a cancelled subscription",
+          "pathParams": [
+            {
+              "name": "id",
+              "type": "String"
+            }
+          ],
+          "request": null,
+          "response": null
+        },
+        {
+          "method": "PATCH",
+          "path": "/{id}/reminder",
+          "summary": "Toggle reminder",
+          "description": "Toggle the reminder enabled status for a subscription",
           "pathParams": [
             {
               "name": "id",
