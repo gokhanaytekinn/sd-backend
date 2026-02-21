@@ -6,6 +6,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.sd.backend.dto.*;
 import com.sd.backend.exception.BadRequestException;
+import com.sd.backend.exception.ResourceNotFoundException;
 import com.sd.backend.exception.UnauthorizedException;
 import com.sd.backend.model.User;
 import com.sd.backend.model.enums.UserTier;
@@ -20,7 +21,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -31,6 +34,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final EmailService emailService;
 
     @Value("${google.client.id}")
     private String googleClientId;
@@ -138,5 +142,51 @@ public class AuthService {
             log.error("Google token verification failed", e);
             throw new BadRequestException("Google token verification failed: " + e.getMessage());
         }
+    }
+
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.getEmail()));
+
+        String code = String.format("%06d", new Random().nextInt(999999));
+        user.setResetCode(code);
+        user.setResetCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+
+        emailService.sendResetCode(user.getEmail(), code);
+    }
+
+    @Transactional(readOnly = true)
+    public void verifyCode(VerifyCodeRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (user.getResetCode() == null || !user.getResetCode().equals(request.getCode())) {
+            throw new BadRequestException("Invalid reset code");
+        }
+
+        if (user.getResetCodeExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Reset code has expired");
+        }
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (user.getResetCode() == null || !user.getResetCode().equals(request.getCode())) {
+            throw new BadRequestException("Invalid reset code");
+        }
+
+        if (user.getResetCodeExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Reset code has expired");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setResetCode(null);
+        user.setResetCodeExpiresAt(null);
+        userRepository.save(user);
     }
 }

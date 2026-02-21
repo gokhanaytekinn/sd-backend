@@ -42,6 +42,10 @@ public class User {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    private String resetCode;
+
+    private LocalDateTime resetCodeExpiresAt;
+
     @DBRef
     private List<Subscription> subscriptions;
 
