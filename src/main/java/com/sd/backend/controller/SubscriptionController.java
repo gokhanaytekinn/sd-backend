@@ -4,7 +4,6 @@ import com.sd.backend.dto.FlagSuspiciousRequest;
 import com.sd.backend.dto.SubscriptionRequest;
 import com.sd.backend.dto.SubscriptionResponse;
 import com.sd.backend.dto.SubscriptionUpdateRequest;
-import com.sd.backend.exception.BadRequestException;
 import com.sd.backend.model.enums.SubscriptionStatus;
 import com.sd.backend.service.SubscriptionService;
 import io.swagger.v3.oas.annotations.Operation;
