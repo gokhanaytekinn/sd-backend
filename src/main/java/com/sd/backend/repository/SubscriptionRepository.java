@@ -22,4 +22,7 @@ public interface SubscriptionRepository extends MongoRepository<Subscription, St
     @Query("{ 'renewalDate' : ?0, 'status' : ?1, 'reminderEnabled' : ?2 }")
     List<Subscription> findByRenewalDateAndStatusAndReminderEnabled(LocalDate renewalDate, SubscriptionStatus status,
             Boolean reminderEnabled);
+
+    List<Subscription> findByUserIdAndRenewalDateBetweenAndStatus(String userId, LocalDate start, LocalDate end,
+            SubscriptionStatus status);
 }

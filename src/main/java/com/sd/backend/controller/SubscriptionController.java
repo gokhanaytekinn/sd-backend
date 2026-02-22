@@ -47,6 +47,15 @@ public class SubscriptionController {
         return ResponseEntity.ok(subscriptions);
     }
 
+    @GetMapping("/upcoming")
+    @Operation(summary = "Get upcoming subscriptions", description = "Get subscriptions due within the next 30 days")
+    public ResponseEntity<List<SubscriptionResponse>> getUpcomingSubscriptions(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String userId = userDetails.getUsername();
+        List<SubscriptionResponse> subscriptions = subscriptionService.getUpcomingSubscriptions(userId);
+        return ResponseEntity.ok(subscriptions);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<SubscriptionResponse> getSubscription(
             @PathVariable String id,

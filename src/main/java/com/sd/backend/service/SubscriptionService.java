@@ -1,12 +1,10 @@
 package com.sd.backend.service;
 
-import com.sd.backend.dto.FlagSuspiciousRequest;
 import com.sd.backend.dto.SubscriptionRequest;
 import com.sd.backend.dto.SubscriptionResponse;
 import com.sd.backend.dto.SubscriptionUpdateRequest;
 import com.sd.backend.exception.ResourceNotFoundException;
 import com.sd.backend.exception.UnauthorizedException;
-import com.sd.backend.exception.BadRequestException;
 import com.sd.backend.model.Subscription;
 import com.sd.backend.model.User;
 import com.sd.backend.model.enums.SubscriptionStatus;
@@ -180,6 +178,20 @@ public class SubscriptionService {
     }
 
     @Transactional(readOnly = true)
+    public List<SubscriptionResponse> getUpcomingSubscriptions(String userId) {
+        LocalDate now = LocalDate.now();
+        LocalDate limit = now.plusDays(10);
+
+        List<Subscription> subscriptions = subscriptionRepository
+                .findByUserIdAndRenewalDateBetweenAndStatus(userId, now, limit, SubscriptionStatus.ACTIVE);
+
+        return subscriptions.stream()
+                .sorted((s1, s2) -> s1.getRenewalDate().compareTo(s2.getRenewalDate()))
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<SubscriptionResponse> getSuspiciousSubscriptions() {
         List<Subscription> subscriptions = subscriptionRepository
                 .findByIsSuspiciousAndIsApproved(true, false);
@@ -189,7 +201,6 @@ public class SubscriptionService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
     public SubscriptionResponse flagAsSuspicious(String id, String reason) {
         Subscription subscription = subscriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
