@@ -20,9 +20,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/transactions")
 @RequiredArgsConstructor
 public class TransactionController {
-    
+
     private final TransactionService transactionService;
-    
+
     @GetMapping
     public ResponseEntity<Page<TransactionResponse>> getTransactions(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -35,16 +35,16 @@ public class TransactionController {
         Page<TransactionResponse> transactions = transactionService.getTransactions(userId, type, status, pageable);
         return ResponseEntity.ok(transactions);
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<TransactionResponse> getTransaction(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal UserDetails userDetails) {
         String userId = userDetails.getUsername();
         TransactionResponse transaction = transactionService.getTransaction(id, userId);
         return ResponseEntity.ok(transaction);
     }
-    
+
     @PostMapping
     public ResponseEntity<TransactionResponse> createTransaction(
             @Valid @RequestBody TransactionRequest request,

@@ -57,7 +57,7 @@ public class SubscriptionController {
 
     @GetMapping("/{id}")
     public ResponseEntity<SubscriptionResponse> getSubscription(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal UserDetails userDetails) {
         String userId = userDetails.getUsername();
         SubscriptionResponse subscription = subscriptionService.getSubscription(id, userId);
@@ -76,7 +76,7 @@ public class SubscriptionController {
     @PutMapping("/{id}")
     @Operation(summary = "Update subscription", description = "Update an existing subscription's details")
     public ResponseEntity<SubscriptionResponse> updateSubscription(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @Valid @RequestBody SubscriptionUpdateRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
         String userId = userDetails.getUsername();
@@ -86,7 +86,7 @@ public class SubscriptionController {
 
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelSubscription(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal UserDetails userDetails) {
         String userId = userDetails.getUsername();
         subscriptionService.cancelSubscription(id, userId);
@@ -96,7 +96,7 @@ public class SubscriptionController {
     @PatchMapping("/{id}/reactivate")
     @Operation(summary = "Reactivate subscription", description = "Reactivate a cancelled subscription")
     public ResponseEntity<Void> reactivateSubscription(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal UserDetails userDetails) {
         String userId = userDetails.getUsername();
         subscriptionService.reactivateSubscription(id, userId);
@@ -106,7 +106,7 @@ public class SubscriptionController {
     @PatchMapping("/{id}/reminder")
     @Operation(summary = "Toggle reminder", description = "Toggle the reminder enabled status for a subscription")
     public ResponseEntity<SubscriptionResponse> toggleReminder(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal UserDetails userDetails) {
         String userId = userDetails.getUsername();
         SubscriptionResponse subscription = subscriptionService.toggleReminder(id, userId);
@@ -115,7 +115,7 @@ public class SubscriptionController {
 
     @PatchMapping("/{id}/flag")
     public ResponseEntity<SubscriptionResponse> flagAsSuspicious(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @Valid @RequestBody FlagSuspiciousRequest request) {
         SubscriptionResponse subscription = subscriptionService.flagAsSuspicious(id, request.getReason());
         return ResponseEntity.ok(subscription);
@@ -123,7 +123,7 @@ public class SubscriptionController {
 
     @PatchMapping("/{id}/approve")
     public ResponseEntity<SubscriptionResponse> approveSubscription(
-            @PathVariable String id,
+            @PathVariable("id") String id,
             @AuthenticationPrincipal UserDetails userDetails) {
         String approvedBy = userDetails.getUsername();
         SubscriptionResponse subscription = subscriptionService.approveSubscription(id, approvedBy);
