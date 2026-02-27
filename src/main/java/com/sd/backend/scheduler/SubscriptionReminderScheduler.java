@@ -20,7 +20,7 @@ public class SubscriptionReminderScheduler {
     private final SubscriptionRepository subscriptionRepository;
     private final FcmService fcmService;
 
-    @Scheduled(cron = "0 16 14 * * ?") // 13:27 everyday
+    @Scheduled(cron = "0 44 14 * * ?") // 13:27 everyday
     public void sendSubscriptionReminders() {
         log.info("Starting subscription reminder check...");
 
@@ -123,7 +123,10 @@ public class SubscriptionReminderScheduler {
                 break;
         }
 
-        fcmService.sendNotification(sub.getUser().getFcmToken(), title, body);
+        java.util.Map<String, String> data = new java.util.HashMap<>();
+        data.put("navigate_to", "upcoming_subscriptions");
+
+        fcmService.sendNotification(sub.getUser().getFcmToken(), title, body, data);
         log.info("Sent localized ({}) reminder to user {} for subscription {}",
                 language, sub.getUser().getId(), sub.getName());
     }
