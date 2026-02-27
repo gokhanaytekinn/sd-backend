@@ -49,6 +49,8 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setName(request.getName());
+        user.setNotificationsEnabled(true);
+        user.setLanguage(request.getLanguage() != null ? request.getLanguage() : "tr");
         user.setTier(UserTier.FREE);
 
         user = userRepository.save(user);

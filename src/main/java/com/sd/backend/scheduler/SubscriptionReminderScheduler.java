@@ -20,7 +20,7 @@ public class SubscriptionReminderScheduler {
     private final SubscriptionRepository subscriptionRepository;
     private final FcmService fcmService;
 
-    @Scheduled(cron = "0 55 13 * * ?") // 13:27 everyday
+    @Scheduled(cron = "0 16 14 * * ?") // 13:27 everyday
     public void sendSubscriptionReminders() {
         log.info("Starting subscription reminder check...");
 
@@ -41,28 +41,90 @@ public class SubscriptionReminderScheduler {
                 // Check user's global notification setting
                 Boolean globalEnabled = sub.getUser().getNotificationsEnabled();
                 if (globalEnabled == null || globalEnabled) {
-                    String language = sub.getUser().getLanguage() != null ? sub.getUser().getLanguage() : "tr";
-                    String title;
-                    String body;
-
-                    if ("en".equalsIgnoreCase(language)) {
-                        title = sub.getName() + " subscription";
-                        body = String.format("Your %s subscription will be renewed for %s %s.",
-                                sub.getName(), sub.getAmount(), sub.getCurrency());
-                    } else {
-                        // Default to Turkish
-                        title = sub.getName() + " aboneliğiniz";
-                        body = String.format("%s aboneliğiniz %s %s tutarında yenilenecektir.",
-                                sub.getName(), sub.getAmount(), sub.getCurrency());
-                    }
-
-                    fcmService.sendNotification(sub.getUser().getFcmToken(), title, body);
-                    log.info("Sent localized ({}) reminder to user {} for subscription {}",
-                            language, sub.getUser().getId(), sub.getName());
+                    localizeAndSend(sub);
                 } else {
                     log.info("Skipping reminder for user {} - global notifications disabled", sub.getUser().getId());
                 }
             }
         }
+    }
+
+    private void localizeAndSend(Subscription sub) {
+        String language = sub.getUser().getLanguage() != null ? sub.getUser().getLanguage() : "tr";
+        String title;
+        String body;
+
+        switch (language.toLowerCase()) {
+            case "en":
+                title = sub.getName() + " subscription";
+                body = String.format("Your %s subscription will be renewed for %s %s.",
+                        sub.getName(), sub.getAmount(), sub.getCurrency());
+                break;
+            case "az":
+                title = sub.getName() + " abunəliyiniz";
+                body = String.format("%s abunəliyiniz %s %s məbləğində yenilənəcək.",
+                        sub.getName(), sub.getAmount(), sub.getCurrency());
+                break;
+            case "kk":
+                title = sub.getName() + " жазылымыңыз";
+                body = String.format("%s жазылымыңыз %s %s сомасына жаңартылады.",
+                        sub.getName(), sub.getAmount(), sub.getCurrency());
+                break;
+            case "uz":
+                title = sub.getName() + " obunangiz";
+                body = String.format("%s obunangiz %s %s miqdorida yangilanadi.",
+                        sub.getName(), sub.getAmount(), sub.getCurrency());
+                break;
+            case "ky":
+                title = sub.getName() + " жазылууңуз";
+                body = String.format("%s жазылууңуз %s %s суммасына жаңартылат.",
+                        sub.getName(), sub.getAmount(), sub.getCurrency());
+                break;
+            case "tk":
+                title = sub.getName() + " abunalygyňyz";
+                body = String.format("%s abunalygyňyz %s %s möçberinde täzelener.",
+                        sub.getName(), sub.getAmount(), sub.getCurrency());
+                break;
+            case "es":
+                title = "Suscripción a " + sub.getName();
+                body = String.format("Su suscripción a %s se renovará por un importe de %s %s.",
+                        sub.getName(), sub.getAmount(), sub.getCurrency());
+                break;
+            case "ru":
+                title = "Подписка на " + sub.getName();
+                body = String.format("Ваша подписка на %s будет продлена на сумму %s %s.",
+                        sub.getName(), sub.getAmount(), sub.getCurrency());
+                break;
+            case "zh":
+                title = sub.getName() + " 订阅";
+                body = String.format("您的 %s 订阅将续订，金额为 %s %s。",
+                        sub.getName(), sub.getAmount(), sub.getCurrency());
+                break;
+            case "fr":
+                title = "Abonnement " + sub.getName();
+                body = String.format("Votre abonnement %s sera renouvelé pour un montant de %s %s.",
+                        sub.getName(), sub.getAmount(), sub.getCurrency());
+                break;
+            case "de":
+                title = sub.getName() + "-Abonnement";
+                body = String.format("Ihr %s-Abonnement wird für einen Betrag von %s %s verlängert.",
+                        sub.getName(), sub.getAmount(), sub.getCurrency());
+                break;
+            case "id":
+                title = "Langganan " + sub.getName();
+                body = String.format("Langganan %s Anda akan diperpanjang sebesar %s %s.",
+                        sub.getName(), sub.getAmount(), sub.getCurrency());
+                break;
+            case "tr":
+            default:
+                title = sub.getName() + " aboneliğiniz";
+                body = String.format("%s aboneliğiniz %s %s tutarında yenilenecektir.",
+                        sub.getName(), sub.getAmount(), sub.getCurrency());
+                break;
+        }
+
+        fcmService.sendNotification(sub.getUser().getFcmToken(), title, body);
+        log.info("Sent localized ({}) reminder to user {} for subscription {}",
+                language, sub.getUser().getId(), sub.getName());
     }
 }
