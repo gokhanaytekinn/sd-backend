@@ -1,5 +1,6 @@
 package com.sd.backend.security;
 
+import com.sd.backend.config.RequestLoggingFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,15 +25,27 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RequestLoggingFilter requestLoggingFilter;
     private final UserDetailsServiceImpl userDetailsService;
     private final String allowedOrigins;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+            RequestLoggingFilter requestLoggingFilter,
             UserDetailsServiceImpl userDetailsService,
             @Value("${cors.allowed.origins}") String allowedOrigins) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.requestLoggingFilter = requestLoggingFilter;
         this.userDetailsService = userDetailsService;
         this.allowedOrigins = allowedOrigins;
+    }
+
+    @Bean
+    public org.springframework.boot.web.servlet.FilterRegistrationBean<RequestLoggingFilter> loggingFilterRegistration(
+            RequestLoggingFilter filter) {
+        org.springframework.boot.web.servlet.FilterRegistrationBean<RequestLoggingFilter> registration = new org.springframework.boot.web.servlet.FilterRegistrationBean<>(
+                filter);
+        registration.setEnabled(false);
+        return registration;
     }
 
     @Bean
@@ -64,7 +77,8 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(requestLoggingFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }
