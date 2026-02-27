@@ -7,4 +7,6 @@ import lombok.Data;
 public class NotificationSettingsRequest {
     @NotNull
     private Boolean enabled;
+
+    private String language;
 }

@@ -35,6 +35,8 @@ public class User {
 
     private Boolean notificationsEnabled = true;
 
+    private String language = "tr";
+
     private UserTier tier = UserTier.FREE;
 
     @CreatedDate

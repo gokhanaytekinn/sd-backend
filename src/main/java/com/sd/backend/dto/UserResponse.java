@@ -16,5 +16,6 @@ public class UserResponse {
     private String name;
     private UserTier tier;
     private Boolean notificationsEnabled;
+    private String language;
     private LocalDateTime createdAt;
 }

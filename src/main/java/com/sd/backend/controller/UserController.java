@@ -48,6 +48,9 @@ public class UserController {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         user.setNotificationsEnabled(request.getEnabled());
+        if (request.getLanguage() != null) {
+            user.setLanguage(request.getLanguage());
+        }
         userRepository.save(user);
 
         return ResponseEntity.ok().build();

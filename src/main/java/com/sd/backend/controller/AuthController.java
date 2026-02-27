@@ -94,14 +94,13 @@ public class AuthController {
                 User user = userRepository.findById(userId)
                                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-                UserResponse response = new UserResponse(
+                return ResponseEntity.ok(new UserResponse(
                                 user.getId(),
                                 user.getEmail(),
                                 user.getName(),
                                 user.getTier(),
                                 user.getNotificationsEnabled(),
-                                user.getCreatedAt());
-
-                return ResponseEntity.ok(response);
+                                user.getLanguage(),
+                                user.getCreatedAt()));
         }
 }

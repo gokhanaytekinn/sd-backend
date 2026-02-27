@@ -20,7 +20,7 @@ public class SubscriptionReminderScheduler {
     private final SubscriptionRepository subscriptionRepository;
     private final FcmService fcmService;
 
-    @Scheduled(cron = "0 29 13 * * ?") // 13:27 everyday
+    @Scheduled(cron = "0 55 13 * * ?") // 13:27 everyday
     public void sendSubscriptionReminders() {
         log.info("Starting subscription reminder check...");
 
@@ -41,12 +41,24 @@ public class SubscriptionReminderScheduler {
                 // Check user's global notification setting
                 Boolean globalEnabled = sub.getUser().getNotificationsEnabled();
                 if (globalEnabled == null || globalEnabled) {
-                    String title = sub.getName();
-                    String body = String.format("Aboneliğiniz yarın yenilenecek: %s %s",
-                            sub.getAmount(), sub.getCurrency());
+                    String language = sub.getUser().getLanguage() != null ? sub.getUser().getLanguage() : "tr";
+                    String title;
+                    String body;
+
+                    if ("en".equalsIgnoreCase(language)) {
+                        title = sub.getName() + " subscription";
+                        body = String.format("Your %s subscription will be renewed for %s %s.",
+                                sub.getName(), sub.getAmount(), sub.getCurrency());
+                    } else {
+                        // Default to Turkish
+                        title = sub.getName() + " aboneliğiniz";
+                        body = String.format("%s aboneliğiniz %s %s tutarında yenilenecektir.",
+                                sub.getName(), sub.getAmount(), sub.getCurrency());
+                    }
 
                     fcmService.sendNotification(sub.getUser().getFcmToken(), title, body);
-                    log.info("Sent reminder to user {} for subscription {}", sub.getUser().getId(), sub.getName());
+                    log.info("Sent localized ({}) reminder to user {} for subscription {}",
+                            language, sub.getUser().getId(), sub.getName());
                 } else {
                     log.info("Skipping reminder for user {} - global notifications disabled", sub.getUser().getId());
                 }
