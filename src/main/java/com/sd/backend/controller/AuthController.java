@@ -99,6 +99,7 @@ public class AuthController {
                                 user.getEmail(),
                                 user.getName(),
                                 user.getTier(),
+                                user.getNotificationsEnabled(),
                                 user.getCreatedAt());
 
                 return ResponseEntity.ok(response);

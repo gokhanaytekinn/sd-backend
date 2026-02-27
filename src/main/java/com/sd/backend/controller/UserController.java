@@ -36,4 +36,20 @@ public class UserController {
 
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/notifications")
+    @Operation(summary = "Update Notification Settings", description = "Update the global notification preference for the current user")
+    public ResponseEntity<Void> updateNotificationSettings(
+            @Valid @RequestBody com.sd.backend.dto.NotificationSettingsRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        String userId = userDetails.getUsername();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        user.setNotificationsEnabled(request.getEnabled());
+        userRepository.save(user);
+
+        return ResponseEntity.ok().build();
+    }
 }

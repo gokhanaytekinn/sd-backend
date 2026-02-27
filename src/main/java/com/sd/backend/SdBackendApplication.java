@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.config.EnableMongoAuditing;
 
 @SpringBootApplication
 @EnableMongoAuditing
+@org.springframework.scheduling.annotation.EnableScheduling
 public class SdBackendApplication {
 
     public static void main(String[] args) {

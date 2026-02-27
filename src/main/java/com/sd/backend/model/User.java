@@ -33,6 +33,8 @@ public class User {
 
     private String fcmToken;
 
+    private Boolean notificationsEnabled = true;
+
     private UserTier tier = UserTier.FREE;
 
     @CreatedDate

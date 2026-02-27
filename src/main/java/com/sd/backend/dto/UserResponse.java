@@ -15,5 +15,6 @@ public class UserResponse {
     private String email;
     private String name;
     private UserTier tier;
+    private Boolean notificationsEnabled;
     private LocalDateTime createdAt;
 }

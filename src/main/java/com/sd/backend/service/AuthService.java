@@ -62,6 +62,7 @@ public class AuthService {
                 user.getEmail(),
                 user.getName(),
                 user.getTier(),
+                user.getNotificationsEnabled(),
                 user.getCreatedAt());
 
         return new AuthResponse(token, userResponse);
@@ -85,6 +86,7 @@ public class AuthService {
                 user.getEmail(),
                 user.getName(),
                 user.getTier(),
+                user.getNotificationsEnabled(),
                 user.getCreatedAt());
 
         return new AuthResponse(token, userResponse);
@@ -119,6 +121,7 @@ public class AuthService {
                 user.getEmail(),
                 user.getName(),
                 user.getTier(),
+                user.getNotificationsEnabled(),
                 user.getCreatedAt());
 
         return new AuthResponse(token, userResponse);
