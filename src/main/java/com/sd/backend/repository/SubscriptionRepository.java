@@ -11,18 +11,18 @@ import java.util.List;
 
 @Repository
 public interface SubscriptionRepository extends MongoRepository<Subscription, String> {
-    List<Subscription> findByUserId(String userId);
+        List<Subscription> findByUserId(String userId);
 
-    List<Subscription> findByUserIdAndStatus(String userId, SubscriptionStatus status);
+        List<Subscription> findByUserIdAndStatus(String userId, SubscriptionStatus status);
 
-    List<Subscription> findByUserIdAndIsSuspicious(String userId, Boolean isSuspicious);
+        List<Subscription> findByUserIdAndIsSuspicious(String userId, Boolean isSuspicious);
 
-    List<Subscription> findByIsSuspiciousAndIsApproved(Boolean isSuspicious, Boolean isApproved);
+        List<Subscription> findByIsSuspiciousAndIsApproved(Boolean isSuspicious, Boolean isApproved);
 
-    @Query("{ 'renewalDate' : ?0, 'status' : ?1, 'reminderEnabled' : ?2 }")
-    List<Subscription> findByRenewalDateAndStatusAndReminderEnabled(LocalDate renewalDate, SubscriptionStatus status,
-            Boolean reminderEnabled);
+        @Query("{ 'renewalDate' : { $gte: ?0, $lt: ?1 }, 'status' : ?2, 'reminderEnabled' : ?3 }")
+        List<Subscription> findByRenewalDateRangeAndStatusAndReminderEnabled(LocalDate startDate, LocalDate endDate,
+                        SubscriptionStatus status, Boolean reminderEnabled);
 
-    List<Subscription> findByUserIdAndRenewalDateBetweenAndStatus(String userId, LocalDate start, LocalDate end,
-            SubscriptionStatus status);
+        List<Subscription> findByUserIdAndRenewalDateBetweenAndStatus(String userId, LocalDate start, LocalDate end,
+                        SubscriptionStatus status);
 }

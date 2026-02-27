@@ -15,19 +15,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ReminderService {
-    
+
     private final ReminderRepository reminderRepository;
     private final UserRepository userRepository;
-    
+
     @Transactional(readOnly = true)
     public List<ReminderResponse> getReminders(String userId, ReminderType type, Boolean isRead) {
         List<Reminder> reminders;
-        
+
         if (type != null) {
             reminders = reminderRepository.findByUserIdAndType(userId, type);
         } else if (isRead != null) {
@@ -35,17 +36,17 @@ public class ReminderService {
         } else {
             reminders = reminderRepository.findByUserId(userId);
         }
-        
+
         return reminders.stream()
-            .map(this::toResponse)
-            .collect(Collectors.toList());
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
-    
+
     @Transactional
     public ReminderResponse createReminder(ReminderRequest request, String userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         Reminder reminder = new Reminder();
         reminder.setUser(user);
         reminder.setType(request.getType());
@@ -53,74 +54,73 @@ public class ReminderService {
         reminder.setMessage(request.getMessage());
         reminder.setScheduledAt(request.getScheduledAt());
         reminder.setIsRead(false);
-        
+
         reminder = reminderRepository.save(reminder);
         return toResponse(reminder);
     }
-    
+
     @Transactional
     public ReminderResponse updateReminder(String id, ReminderUpdateRequest request, String userId) {
         Reminder reminder = reminderRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
+
         if (!reminder.getUser().getId().equals(userId)) {
             throw new UnauthorizedException("Unauthorized access to reminder");
         }
-        
+
         if (request.getTitle() != null) {
             reminder.setTitle(request.getTitle());
         }
-        
+
         if (request.getMessage() != null) {
             reminder.setMessage(request.getMessage());
         }
-        
+
         if (request.getScheduledAt() != null) {
             reminder.setScheduledAt(request.getScheduledAt());
         }
-        
+
         reminder = reminderRepository.save(reminder);
         return toResponse(reminder);
     }
-    
+
     @Transactional
     public void markAsRead(String id, String userId) {
         Reminder reminder = reminderRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
+
         if (!reminder.getUser().getId().equals(userId)) {
             throw new UnauthorizedException("Unauthorized access to reminder");
         }
-        
+
         reminder.setIsRead(true);
         reminderRepository.save(reminder);
     }
-    
+
     @Transactional
     public void deleteReminder(String id, String userId) {
         Reminder reminder = reminderRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Reminder not found"));
+
         if (!reminder.getUser().getId().equals(userId)) {
             throw new UnauthorizedException("Unauthorized access to reminder");
         }
-        
+
         reminderRepository.delete(reminder);
     }
-    
+
     private ReminderResponse toResponse(Reminder reminder) {
         return new ReminderResponse(
-            reminder.getId(),
-            reminder.getUser().getId(),
-            reminder.getType(),
-            reminder.getTitle(),
-            reminder.getMessage(),
-            reminder.getScheduledAt(),
-            reminder.getSentAt(),
-            reminder.getIsRead(),
-            reminder.getMetadata(),
-            reminder.getCreatedAt(),
-            reminder.getUpdatedAt()
-        );
+                reminder.getId(),
+                reminder.getUser().getId(),
+                reminder.getType(),
+                reminder.getTitle(),
+                reminder.getMessage(),
+                reminder.getScheduledAt(),
+                reminder.getSentAt(),
+                reminder.getIsRead(),
+                reminder.getMetadata(),
+                reminder.getCreatedAt(),
+                reminder.getUpdatedAt());
     }
 }
