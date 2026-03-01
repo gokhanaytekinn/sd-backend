@@ -7,6 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  # Repository isminde büyük harf varsa GHCR hata verir, bu yüzden hepsini küçük harfe zorluyoruz.
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
@@ -32,6 +33,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -53,24 +56,28 @@ jobs:
         username: ${{ secrets.VPS_USERNAME }}
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
-          # GHCR'a login ol (İmajı çekebilmek için)
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          # Değişkenleri küçük harfe zorla (GHCR uyumu için)
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           
-          # Yeni imajı çek
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+          # GHCR'a login ol
+          echo ${{ secrets.GITHUB_TOKEN }} | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
-          # Eski konteyneri durdur ve sil
-          docker stop backend-api || true
-          docker rm backend-api || true
+          # En güncel imajı çek
+          sudo docker pull ghcr.io/$REPO_LOWER:latest
           
-          # Yeni konteyneri ayağa kaldır
-          docker run -d \
+          # Mevcut konteyneri (sd-api) durdur ve sil
+          sudo docker stop sd-api || true
+          sudo docker rm sd-api || true
+          
+          # Yeni konteyneri ayağa kaldır (Sizin manuel komutunuzla uyumlu)
+          sudo docker run -d \
             -p 80:8080 \
-            --name backend-api \
+            --name sd-api \
             --restart always \
             -e SPRING_PROFILES_ACTIVE=prod \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+            ghcr.io/$REPO_LOWER:latest
           
-          # Eski imajları temizle
-          docker image prune -f
+          # Gereksiz imajları temizle
+          sudo docker image prune -f
+
 
