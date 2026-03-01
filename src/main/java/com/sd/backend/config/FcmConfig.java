@@ -13,19 +13,33 @@ import java.io.IOException;
 @Slf4j
 public class FcmConfig {
 
+    @org.springframework.beans.factory.annotation.Value("${FIREBASE_CONFIG_JSON:}")
+    private String firebaseConfigJson;
+
     @PostConstruct
     public void initialize() {
         try {
             if (FirebaseApp.getApps().isEmpty()) {
-                org.springframework.core.io.ClassPathResource resource = new org.springframework.core.io.ClassPathResource(
-                        "serviceAccountKey.json");
+                java.io.InputStream inputStream;
 
-                GoogleCredentials credentials = GoogleCredentials.fromStream(resource.getInputStream())
+                if (firebaseConfigJson != null && !firebaseConfigJson.trim().isEmpty()) {
+                    log.info("Loading Firebase credentials from environment variable/property");
+                    inputStream = new java.io.ByteArrayInputStream(
+                            firebaseConfigJson.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                } else {
+                    log.info("Loading Firebase credentials from classpath (serviceAccountKey.json)");
+                    org.springframework.core.io.ClassPathResource resource = new org.springframework.core.io.ClassPathResource(
+                            "serviceAccountKey.json");
+                    inputStream = resource.getInputStream();
+                }
+
+                GoogleCredentials credentials = GoogleCredentials.fromStream(inputStream)
                         .createScoped(java.util.Collections
                                 .singletonList("https://www.googleapis.com/auth/firebase.messaging"));
 
                 // Proactively test if we can refresh the token to catch auth errors early
                 credentials.refreshAccessToken();
+
                 log.info("Firebase credentials verified. Project ID: {}",
                         ((com.google.auth.oauth2.ServiceAccountCredentials) credentials).getProjectId());
 
