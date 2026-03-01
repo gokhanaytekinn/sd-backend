@@ -20,7 +20,8 @@ public class SubscriptionReminderScheduler {
     private final SubscriptionRepository subscriptionRepository;
     private final FcmService fcmService;
 
-    @Scheduled(cron = "0 45 19 * * ?") // 13:27 everyday
+    @Scheduled(cron = "0 52 19 * * ?", zone = "Europe/Istanbul") // 19:45 Istanbul time
+
     public void sendSubscriptionReminders() {
         log.info("Starting subscription reminder check...");
 
