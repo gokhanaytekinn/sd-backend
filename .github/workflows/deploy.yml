@@ -3,16 +3,49 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main # Hangi branch'e push yapıldığında çalışacağını buradan belirlersiniz.
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
   deploy:
+    needs: build-and-push
     runs-on: ubuntu-latest
     
     steps:
-    - name: Get latest code
-      uses: actions/checkout@v4
-
     - name: Execute remote ssh commands to deploy
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -20,22 +53,24 @@ jobs:
         username: ${{ secrets.VPS_USERNAME }}
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
-          # 1. Proje dizinine git (VPS'inizdeki projenizin bulunduğu klasör)
-          # Lütfen bu yolu kendi sunucunuzdaki yolla değiştirin!
-          cd /path/to/your/project/sd-backend
+          # GHCR'a login ol (İmajı çekebilmek için)
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
-          # 2. GitHub'dan en güncel kodları çek
-          git pull origin main
+          # Yeni imajı çek
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
           
-          # 3. Yeni Docker imajını oluştur
-          docker build -t sd-backend:latest .
-          
-          # 4. Eski çalışan konteyneri durdur ve sil (varsa)
+          # Eski konteyneri durdur ve sil
           docker stop backend-api || true
           docker rm backend-api || true
           
-          # 5. Yeni konteyneri ayağa kaldır
-          docker run -d -p 80:8080 --name backend-api -e SPRING_PROFILES_ACTIVE=prod sd-backend:latest
+          # Yeni konteyneri ayağa kaldır
+          docker run -d \
+            -p 80:8080 \
+            --name backend-api \
+            --restart always \
+            -e SPRING_PROFILES_ACTIVE=prod \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
           
-          # İsteğe bağlı: Kullanılmayan eski Docker imajlarını temizle (sunucuda yer kaplamaması için)
+          # Eski imajları temizle
           docker image prune -f
+
