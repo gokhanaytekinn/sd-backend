@@ -13,6 +13,8 @@ import java.util.List;
 public interface SubscriptionRepository extends MongoRepository<Subscription, String> {
         List<Subscription> findByUserId(String userId);
 
+        List<Subscription> findByUserIdOrJointUserIdsContaining(String userId, String jointUserId);
+
         List<Subscription> findByUserIdAndStatus(String userId, SubscriptionStatus status);
 
         List<Subscription> findByUserIdAndIsSuspicious(String userId, Boolean isSuspicious);

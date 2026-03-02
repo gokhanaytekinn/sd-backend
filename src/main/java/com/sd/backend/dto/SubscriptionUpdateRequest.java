@@ -32,4 +32,6 @@ public class SubscriptionUpdateRequest {
     private LocalDate startDate;
 
     private Boolean reminderEnabled;
+
+    private java.util.List<String> jointEmails;
 }

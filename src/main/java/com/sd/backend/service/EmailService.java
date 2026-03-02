@@ -32,4 +32,25 @@ public class EmailService {
             // Kod zaten yukarıda loglandığı için kullanıcı konsoldan bakabilir.
         }
     }
+
+    public void sendInvitationEmail(String to, String inviterName, String subscriptionName) {
+        log.info("Davet e-postası {} için gönderiliyor. Davet eden: {}, Abonelik: {}", to, inviterName,
+                subscriptionName);
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("no-reply@abonelikdedektifi.com");
+            message.setTo(to);
+            message.setSubject("Ortak Abonelik Daveti - Abonelik Dedektifi");
+            message.setText("Merhaba,\n\n" + inviterName + " sizi '" + subscriptionName
+                    + "' isimli aboneliğe ortak olarak eklemek istiyor.\n\n" +
+                    "Aboneliği kabul etmek için uygulamadaki 'Şüpheli Ödemeler' sekmesine göz atabilirsiniz.\n\n" +
+                    "Abonelik Dedektifi Ekibi");
+
+            mailSender.send(message);
+            log.info("Davet e-postası başarıyla gönderildi: {}", to);
+        } catch (Exception e) {
+            log.error("Davet e-postası gönderimi başarısız oldu: {}", e.getMessage());
+        }
+    }
 }

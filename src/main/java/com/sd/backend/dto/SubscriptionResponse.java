@@ -2,6 +2,7 @@ package com.sd.backend.dto;
 
 import com.sd.backend.model.enums.SubscriptionStatus;
 import com.sd.backend.model.enums.UserTier;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,6 +33,8 @@ public class SubscriptionResponse {
     private String currency;
     private String billingCycle;
     private Boolean reminderEnabled;
+    private Boolean owner;
+    private List<InvitationParticipant> participants;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

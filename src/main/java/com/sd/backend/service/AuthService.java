@@ -41,12 +41,13 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+        String email = request.getEmail().toLowerCase().trim();
+        if (userRepository.existsByEmail(email)) {
             throw new BadRequestException("Email already exists");
         }
 
         User user = new User();
-        user.setEmail(request.getEmail());
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setName(request.getName());
         user.setNotificationsEnabled(true);
@@ -73,7 +74,8 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+        String email = request.getEmail().toLowerCase().trim();
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -101,7 +103,7 @@ public class AuthService {
         GoogleIdToken idToken = verifyGoogleToken(request.getIdToken());
 
         GoogleIdToken.Payload payload = idToken.getPayload();
-        String email = payload.getEmail();
+        String email = payload.getEmail().toLowerCase().trim();
         String name = (String) payload.get("name");
 
         // Find existing user or create new one

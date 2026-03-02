@@ -72,6 +72,8 @@ public class Subscription {
     @DBRef
     private List<Transaction> transactions;
 
+    private List<String> jointUserIds;
+
     @Override
     public boolean equals(Object o) {
         if (this == o)

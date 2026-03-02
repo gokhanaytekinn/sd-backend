@@ -1,5 +1,6 @@
 package com.sd.backend.service;
 
+import com.sd.backend.dto.InvitationParticipant;
 import com.sd.backend.dto.SubscriptionRequest;
 import com.sd.backend.dto.SubscriptionResponse;
 import com.sd.backend.dto.SubscriptionUpdateRequest;
@@ -8,6 +9,7 @@ import com.sd.backend.exception.UnauthorizedException;
 import com.sd.backend.model.Subscription;
 import com.sd.backend.model.User;
 import com.sd.backend.model.enums.SubscriptionStatus;
+import com.sd.backend.repository.SubscriptionInvitationRepository;
 import com.sd.backend.repository.SubscriptionRepository;
 import com.sd.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,8 @@ public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
     private final UserRepository userRepository;
+    private final InvitationService invitationService;
+    private final SubscriptionInvitationRepository invitationRepository;
 
     @Transactional(readOnly = true)
     public List<SubscriptionResponse> getSubscriptions(String userId, SubscriptionStatus status, Boolean isSuspicious) {
@@ -35,11 +39,11 @@ public class SubscriptionService {
         } else if (isSuspicious != null) {
             subscriptions = subscriptionRepository.findByUserIdAndIsSuspicious(userId, isSuspicious);
         } else {
-            subscriptions = subscriptionRepository.findByUserId(userId);
+            subscriptions = subscriptionRepository.findByUserIdOrJointUserIdsContaining(userId, userId);
         }
 
         return subscriptions.stream()
-                .map(this::toResponse)
+                .map(sub -> toResponse(sub, userId))
                 .collect(Collectors.toList());
     }
 
@@ -48,11 +52,14 @@ public class SubscriptionService {
         Subscription subscription = subscriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
 
-        if (!subscription.getUser().getId().equals(userId)) {
+        boolean isOwner = subscription.getUser().getId().equals(userId);
+        boolean isJointUser = subscription.getJointUserIds() != null && subscription.getJointUserIds().contains(userId);
+
+        if (!isOwner && !isJointUser) {
             throw new UnauthorizedException("Unauthorized access to subscription");
         }
 
-        return toResponse(subscription);
+        return toResponse(subscription, userId);
     }
 
     @Transactional
@@ -77,7 +84,11 @@ public class SubscriptionService {
 
         subscription = subscriptionRepository.save(subscription);
 
-        return toResponse(subscription);
+        if (request.getJointEmails() != null && !request.getJointEmails().isEmpty()) {
+            invitationService.createInvitations(subscription.getId(), userId, request.getJointEmails());
+        }
+
+        return toResponse(subscription, userId);
     }
 
     @Transactional
@@ -122,7 +133,12 @@ public class SubscriptionService {
         }
 
         subscription = subscriptionRepository.save(subscription);
-        return toResponse(subscription);
+
+        if (request.getJointEmails() != null && !request.getJointEmails().isEmpty()) {
+            invitationService.createInvitations(subscription.getId(), userId, request.getJointEmails());
+        }
+
+        return toResponse(subscription, userId);
     }
 
     @Transactional
@@ -139,7 +155,7 @@ public class SubscriptionService {
         subscription.setReminderEnabled(!currentStatus);
 
         subscription = subscriptionRepository.save(subscription);
-        return toResponse(subscription);
+        return toResponse(subscription, userId);
     }
 
     @Transactional
@@ -187,7 +203,7 @@ public class SubscriptionService {
 
         return subscriptions.stream()
                 .sorted((s1, s2) -> s1.getRenewalDate().compareTo(s2.getRenewalDate()))
-                .map(this::toResponse)
+                .map(sub -> toResponse(sub, userId))
                 .collect(Collectors.toList());
     }
 
@@ -197,7 +213,7 @@ public class SubscriptionService {
                 .findByIsSuspiciousAndIsApproved(true, false);
 
         return subscriptions.stream()
-                .map(this::toResponse)
+                .map(sub -> toResponse(sub, null))
                 .collect(Collectors.toList());
     }
 
@@ -210,7 +226,7 @@ public class SubscriptionService {
         subscription.setStatus(SubscriptionStatus.PENDING_APPROVAL);
 
         subscription = subscriptionRepository.save(subscription);
-        return toResponse(subscription);
+        return toResponse(subscription, null);
     }
 
     @Transactional
@@ -224,7 +240,7 @@ public class SubscriptionService {
         subscription.setStatus(SubscriptionStatus.ACTIVE);
 
         subscription = subscriptionRepository.save(subscription);
-        return toResponse(subscription);
+        return toResponse(subscription, null);
     }
 
     private LocalDate calculateRenewalDate(LocalDate startDate, String billingCycle) {
@@ -236,7 +252,19 @@ public class SubscriptionService {
         };
     }
 
-    private SubscriptionResponse toResponse(Subscription subscription) {
+    private SubscriptionResponse toResponse(Subscription subscription, String currentUserId) {
+        boolean isOwner = currentUserId != null && subscription.getUser().getId().equals(currentUserId);
+
+        List<InvitationParticipant> participants = invitationRepository.findBySubscriptionId(subscription.getId())
+                .stream()
+                .map(inv -> {
+                    String name = userRepository.findByEmail(inv.getInviteeEmail())
+                            .map(User::getName)
+                            .orElse(inv.getInviteeEmail());
+                    return new InvitationParticipant(inv.getInviteeEmail(), name, inv.getStatus());
+                })
+                .collect(Collectors.toList());
+
         return new SubscriptionResponse(
                 subscription.getId(),
                 subscription.getUser().getId(),
@@ -256,6 +284,8 @@ public class SubscriptionService {
                 subscription.getCurrency(),
                 subscription.getBillingCycle(),
                 subscription.getReminderEnabled(),
+                isOwner,
+                participants,
                 subscription.getCreatedAt(),
                 subscription.getUpdatedAt());
     }
