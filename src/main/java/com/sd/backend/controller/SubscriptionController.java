@@ -129,4 +129,15 @@ public class SubscriptionController {
         SubscriptionResponse subscription = subscriptionService.approveSubscription(id, approvedBy);
         return ResponseEntity.ok(subscription);
     }
+
+    @DeleteMapping("/{id}/participants/{email}")
+    @Operation(summary = "Remove participant", description = "Remove a participant from a joint subscription")
+    public ResponseEntity<SubscriptionResponse> deleteParticipant(
+            @PathVariable("id") String id,
+            @PathVariable("email") String email,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String userId = userDetails.getUsername();
+        SubscriptionResponse subscription = subscriptionService.deleteParticipant(id, email, userId);
+        return ResponseEntity.ok(subscription);
+    }
 }

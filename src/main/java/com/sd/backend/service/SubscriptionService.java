@@ -243,6 +243,37 @@ public class SubscriptionService {
         return toResponse(subscription, null);
     }
 
+    @Transactional
+    public SubscriptionResponse deleteParticipant(String subscriptionId, String email, String currentUserId) {
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+
+        if (!subscription.getUser().getId().equals(currentUserId)) {
+            throw new UnauthorizedException("Sadece abonelik sahibi katılımcı silebilir");
+        }
+
+        // Find and delete the invitation
+        invitationRepository.findBySubscriptionId(subscriptionId).stream()
+                .filter(inv -> inv.getInviteeEmail().equalsIgnoreCase(email.trim()))
+                .findFirst()
+                .ifPresent(invitation -> {
+                    // If accepted, also remove from jointUserIds
+                    if (invitation
+                            .getStatus() == com.sd.backend.model.SubscriptionInvitation.InvitationStatus.ACCEPTED) {
+                        userRepository.findByEmail(email.trim().toLowerCase())
+                                .ifPresent(user -> {
+                                    if (subscription.getJointUserIds() != null) {
+                                        subscription.getJointUserIds().remove(user.getId());
+                                    }
+                                });
+                    }
+                    invitationRepository.delete(invitation);
+                });
+
+        Subscription updatedSubscription = subscriptionRepository.save(subscription);
+        return toResponse(updatedSubscription, currentUserId);
+    }
+
     private LocalDate calculateRenewalDate(LocalDate startDate, String billingCycle) {
         return switch (billingCycle.toLowerCase()) {
             case "monthly" -> startDate.plusMonths(1);
