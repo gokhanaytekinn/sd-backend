@@ -12,4 +12,8 @@ public interface SubscriptionInvitationRepository extends MongoRepository<Subscr
             SubscriptionInvitation.InvitationStatus status);
 
     List<SubscriptionInvitation> findBySubscriptionId(String subscriptionId);
+
+    void deleteByInviterId(String inviterId);
+
+    void deleteByInviteeEmail(String inviteeEmail);
 }

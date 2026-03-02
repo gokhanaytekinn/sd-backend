@@ -10,7 +10,12 @@ import com.sd.backend.exception.ResourceNotFoundException;
 import com.sd.backend.exception.UnauthorizedException;
 import com.sd.backend.model.User;
 import com.sd.backend.model.enums.UserTier;
+import com.sd.backend.repository.ReminderRepository;
+import com.sd.backend.repository.SubscriptionInvitationRepository;
+import com.sd.backend.repository.SubscriptionRepository;
+import com.sd.backend.repository.TransactionRepository;
 import com.sd.backend.repository.UserRepository;
+import com.sd.backend.model.Subscription;
 import com.sd.backend.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +37,10 @@ import java.util.UUID;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final SubscriptionRepository subscriptionRepository;
+    private final TransactionRepository transactionRepository;
+    private final ReminderRepository reminderRepository;
+    private final SubscriptionInvitationRepository invitationRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailService emailService;
@@ -198,5 +207,29 @@ public class AuthService {
         user.setResetCode(null);
         user.setResetCodeExpiresAt(null);
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteAccount(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Remove user from joint subscriptions
+        java.util.List<Subscription> sharedSubs = subscriptionRepository.findByUserIdOrJointUserIdsContaining(null,
+                userId);
+        for (Subscription sub : sharedSubs) {
+            if (sub.getJointUserIds() != null && sub.getJointUserIds().contains(userId)) {
+                sub.getJointUserIds().remove(userId);
+                subscriptionRepository.save(sub);
+            }
+        }
+
+        subscriptionRepository.deleteByUserId(userId);
+        transactionRepository.deleteByUserId(userId);
+        reminderRepository.deleteByUserId(userId);
+        invitationRepository.deleteByInviterId(userId);
+        invitationRepository.deleteByInviteeEmail(user.getEmail());
+
+        userRepository.delete(user);
     }
 }

@@ -93,6 +93,16 @@ public class SubscriptionController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete subscription", description = "Completely delete a subscription and its relations")
+    public ResponseEntity<Void> deleteSubscription(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        String userId = userDetails.getUsername();
+        subscriptionService.deleteSubscription(id, userId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{id}/reactivate")
     @Operation(summary = "Reactivate subscription", description = "Reactivate a cancelled subscription")
     public ResponseEntity<Void> reactivateSubscription(

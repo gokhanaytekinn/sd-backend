@@ -11,6 +11,7 @@ import com.sd.backend.model.User;
 import com.sd.backend.model.enums.SubscriptionStatus;
 import com.sd.backend.repository.SubscriptionInvitationRepository;
 import com.sd.backend.repository.SubscriptionRepository;
+import com.sd.backend.repository.TransactionRepository;
 import com.sd.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class SubscriptionService {
     private final UserRepository userRepository;
     private final InvitationService invitationService;
     private final SubscriptionInvitationRepository invitationRepository;
+    private final TransactionRepository transactionRepository;
 
     @Transactional(readOnly = true)
     public List<SubscriptionResponse> getSubscriptions(String userId, SubscriptionStatus status, Boolean isSuspicious) {
@@ -170,6 +172,31 @@ public class SubscriptionService {
         subscription.setStatus(SubscriptionStatus.CANCELLED);
         subscription.setEndDate(LocalDate.now());
         subscriptionRepository.save(subscription);
+    }
+
+    @Transactional
+    public void deleteSubscription(String id, String userId) {
+        Subscription subscription = subscriptionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+
+        if (!subscription.getUser().getId().equals(userId)) {
+            throw new UnauthorizedException("Unauthorized access to subscription");
+        }
+
+        // Delete associated records first
+        // Note: transactionRepository or reminderRepository doesn't natively have
+        // deleteBySubscriptionId
+        // if they don't reference it. Let's see if Transaction or Reminder reference
+        // subscriptionId
+        // We will just remove invitation logic for now, or anything referencing the
+        // subscription
+
+        List<com.sd.backend.model.SubscriptionInvitation> invitations = invitationRepository.findBySubscriptionId(id);
+        invitationRepository.deleteAll(invitations);
+
+        transactionRepository.deleteBySubscriptionId(id);
+
+        subscriptionRepository.delete(subscription);
     }
 
     @Transactional

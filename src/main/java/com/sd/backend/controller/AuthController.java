@@ -103,4 +103,17 @@ public class AuthController {
                                 user.getLanguage(),
                                 user.getCreatedAt()));
         }
+
+        @DeleteMapping("/me")
+        @Operation(summary = "Delete current user", description = "Permanently deletes the currently authenticated user and all associated data", security = @SecurityRequirement(name = "bearerAuth"))
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "User successfully deleted"),
+                        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+                        @ApiResponse(responseCode = "404", description = "User not found")
+        })
+        public ResponseEntity<Void> deleteAccount(@AuthenticationPrincipal UserDetails userDetails) {
+                String userId = userDetails.getUsername();
+                authService.deleteAccount(userId);
+                return ResponseEntity.ok().build();
+        }
 }

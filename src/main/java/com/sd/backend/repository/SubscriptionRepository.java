@@ -27,4 +27,6 @@ public interface SubscriptionRepository extends MongoRepository<Subscription, St
 
         List<Subscription> findByUserIdAndRenewalDateBetweenAndStatus(String userId, LocalDate start, LocalDate end,
                         SubscriptionStatus status);
+
+        void deleteByUserId(String userId);
 }
