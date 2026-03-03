@@ -232,4 +232,11 @@ public class AuthService {
 
         userRepository.delete(user);
     }
+
+    public String getUserIdFromPrincipal(java.security.Principal principal) {
+        if (principal == null) {
+            throw new UnauthorizedException("User not authenticated");
+        }
+        return principal.getName();
+    }
 }
