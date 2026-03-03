@@ -25,6 +25,6 @@ public enum UserTier {
                 return tier;
             }
         }
-        throw new IllegalArgumentException("Invalid UserTier value: " + value);
+        return FREE; // Hata fırlatmak yerine güvenli varsayılan atama
     }
 }
