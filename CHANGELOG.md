@@ -4,7 +4,7 @@ Sunucu tarafındaki veritabanı, servis ve altyapı değişiklikleri aşağıda 
 
 ## [03.03.2026]
 - **Yenilik:** Abonelik takip sistemi, tam tarih yerine "Gün ve Ay" bazlı çalışacak şekilde tamamen yenilendi. Sistem artık çok daha esnek ve hatasız sonuçlar üretiyor.
-- **Hata Düzeltme:** Sistemde kalan veya silinmiş eski verilerin (örn: eski abonelik paketleri) hatalı okunmasından kaynaklı sunucu çökmeleri çözümlendi. Eski veriler artık güvenli şekilde varsayılan paketlere dönüştürülüyor.
+- **Hata Düzeltme:** Sistemde silinmiş veriler veya uygulamanın gönderdiği değişkenlerin (Abonelik türü, paket bilgisi vb.) sunucu tarafında yanlış yorumlanmasından kaynaklı sunucu çökmeleri ("Sunucu Hatası 500") onarıldı. Format uyuşmazlığında sistemin güvenli bir şekilde varsayılan paketlere (FREE) dönüştürülmesi sağlandı.
 
 ## [01.03.2026]
 - **Hata Düzeltme:** Yaklaşan ödemeleriniz için cihazınıza gönderilmesi gereken bildirimlerin (Push Notification) zamanında ulaşmamasına sebep olan saat dilimi ve planlayıcı hataları giderildi.
