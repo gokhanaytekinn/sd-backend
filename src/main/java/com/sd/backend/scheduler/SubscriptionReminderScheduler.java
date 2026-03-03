@@ -20,7 +20,7 @@ public class SubscriptionReminderScheduler {
     private final SubscriptionRepository subscriptionRepository;
     private final FcmService fcmService;
 
-    @Scheduled(cron = "0 35 20 * * ?", zone = "Europe/Istanbul") // 19:45 Istanbul time
+    @Scheduled(cron = "0 45 20 * * ?", zone = "Europe/Istanbul") // 19:45 Istanbul time
 
     public void sendSubscriptionReminders() {
         log.info("Starting subscription reminder check...");
@@ -32,8 +32,9 @@ public class SubscriptionReminderScheduler {
         // Match the user example: Feb 27 21:00 UTC is Feb 28 00:00 Istanbul
         // We look for anything that falls into tomorrow (Istanbul time)
         // [tomorrow - 1, tomorrow + 1] range covers most TZ shifts
-        List<Subscription> subscriptions = subscriptionRepository.findByRenewalDateRangeAndStatusAndReminderEnabled(
-                tomorrow.minusDays(1), tomorrow.plusDays(1), SubscriptionStatus.ACTIVE, true);
+        List<Subscription> subscriptions = subscriptionRepository
+                .findByStartOrRenewalDateRangeAndStatusAndReminderEnabled(
+                        tomorrow.minusDays(1), tomorrow.plusDays(1), SubscriptionStatus.ACTIVE, true);
 
         log.info("Found {} potential subscriptions for tomorrow", subscriptions.size());
 

@@ -25,6 +25,11 @@ public interface SubscriptionRepository extends MongoRepository<Subscription, St
         List<Subscription> findByRenewalDateRangeAndStatusAndReminderEnabled(LocalDate startDate, LocalDate endDate,
                         SubscriptionStatus status, Boolean reminderEnabled);
 
+        @Query("{ '$or': [ { 'renewalDate' : { $gte: ?0, $lt: ?1 } }, { 'startDate' : { $gte: ?0, $lt: ?1 } } ], 'status' : ?2, 'reminderEnabled' : ?3 }")
+        List<Subscription> findByStartOrRenewalDateRangeAndStatusAndReminderEnabled(LocalDate startDate,
+                        LocalDate endDate,
+                        SubscriptionStatus status, Boolean reminderEnabled);
+
         List<Subscription> findByUserIdAndRenewalDateBetweenAndStatus(String userId, LocalDate start, LocalDate end,
                         SubscriptionStatus status);
 
