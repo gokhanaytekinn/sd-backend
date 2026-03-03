@@ -26,6 +26,8 @@ public class SubscriptionResponse {
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDate renewalDate;
+    private Integer billingDay;
+    private Integer billingMonth;
     private Boolean isSuspicious;
     private String suspiciousReason;
     private Boolean isApproved;

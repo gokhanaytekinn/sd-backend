@@ -29,7 +29,9 @@ public class SubscriptionUpdateRequest {
 
     private BillingCycle billingCycle;
 
-    private LocalDate startDate;
+    private Integer billingDay;
+
+    private Integer billingMonth;
 
     private Boolean reminderEnabled;
 

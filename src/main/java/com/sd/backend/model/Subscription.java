@@ -46,6 +46,8 @@ public class Subscription {
     private LocalDate endDate;
 
     private LocalDate renewalDate;
+    private Integer billingDay;
+    private Integer billingMonth;
 
     private Boolean isSuspicious = false;
 

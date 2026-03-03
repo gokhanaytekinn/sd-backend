@@ -49,6 +49,8 @@ public class ConversionService {
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setStartDate(LocalDate.now());
         subscription.setRenewalDate(calculateRenewalDate(request.getBillingCycle()));
+        subscription.setBillingDay(LocalDate.now().getDayOfMonth());
+        subscription.setBillingMonth(LocalDate.now().getMonthValue());
         subscription.setIsSuspicious(false);
         subscription.setIsApproved(false);
 
@@ -114,6 +116,8 @@ public class ConversionService {
                 subscription.getStartDate(),
                 subscription.getEndDate(),
                 subscription.getRenewalDate(),
+                subscription.getBillingDay(),
+                subscription.getBillingMonth(),
                 subscription.getIsSuspicious(),
                 subscription.getSuspiciousReason(),
                 subscription.getIsApproved(),
