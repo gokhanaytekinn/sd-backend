@@ -2,6 +2,7 @@ package com.sd.backend.dto;
 
 import com.sd.backend.model.enums.TransactionStatus;
 import com.sd.backend.model.enums.TransactionType;
+import com.sd.backend.model.enums.CurrencyCode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,7 @@ public class TransactionResponse {
     private TransactionType type;
     private TransactionStatus status;
     private BigDecimal amount;
-    private String currency;
+    private CurrencyCode currency;
     private String description;
     private String metadata;
     private LocalDateTime createdAt;

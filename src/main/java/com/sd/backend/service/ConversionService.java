@@ -11,6 +11,7 @@ import com.sd.backend.model.enums.SubscriptionStatus;
 import com.sd.backend.model.enums.TransactionStatus;
 import com.sd.backend.model.enums.TransactionType;
 import com.sd.backend.model.enums.UserTier;
+import com.sd.backend.model.enums.BillingCycle;
 import com.sd.backend.repository.SubscriptionRepository;
 import com.sd.backend.repository.TransactionRepository;
 import com.sd.backend.repository.UserRepository;
@@ -91,12 +92,13 @@ public class ConversionService {
         userRepository.save(user);
     }
 
-    private LocalDate calculateRenewalDate(String billingCycle) {
+    private LocalDate calculateRenewalDate(BillingCycle billingCycle) {
         LocalDate now = LocalDate.now();
-        return switch (billingCycle.toLowerCase()) {
-            case "monthly" -> now.plusMonths(1);
-            case "yearly" -> now.plusYears(1);
-            case "quarterly" -> now.plusMonths(3);
+        return switch (billingCycle) {
+            case MONTHLY -> now.plusMonths(1);
+            case YEARLY -> now.plusYears(1);
+            case QUARTERLY -> now.plusMonths(3);
+            case WEEKLY -> now.plusWeeks(1);
             default -> now.plusMonths(1);
         };
     }
@@ -121,7 +123,7 @@ public class ConversionService {
                 subscription.getCurrency(),
                 subscription.getBillingCycle(),
                 subscription.getReminderEnabled(),
-                true, // Converter is the owner
+                true, // Converter result is always for the owner
                 Collections.emptyList(),
                 subscription.getCreatedAt(),
                 subscription.getUpdatedAt());

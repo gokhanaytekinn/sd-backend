@@ -2,6 +2,8 @@ package com.sd.backend.model;
 
 import com.sd.backend.model.enums.SubscriptionStatus;
 import com.sd.backend.model.enums.UserTier;
+import com.sd.backend.model.enums.CurrencyCode;
+import com.sd.backend.model.enums.BillingCycle;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -57,9 +59,9 @@ public class Subscription {
 
     private BigDecimal amount;
 
-    private String currency;
+    private CurrencyCode currency;
 
-    private String billingCycle;
+    private BillingCycle billingCycle;
 
     private Boolean reminderEnabled = false;
 

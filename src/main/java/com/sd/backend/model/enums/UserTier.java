@@ -1,6 +1,30 @@
 package com.sd.backend.model.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum UserTier {
-    FREE,
-    PREMIUM
+    FREE(1),
+    PREMIUM(2);
+
+    private final int value;
+
+    UserTier(int value) {
+        this.value = value;
+    }
+
+    @JsonValue
+    public int getValue() {
+        return value;
+    }
+
+    @JsonCreator
+    public static UserTier fromValue(int value) {
+        for (UserTier tier : values()) {
+            if (tier.value == value) {
+                return tier;
+            }
+        }
+        throw new IllegalArgumentException("Invalid UserTier value: " + value);
+    }
 }

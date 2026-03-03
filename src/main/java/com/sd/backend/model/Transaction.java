@@ -2,6 +2,7 @@ package com.sd.backend.model;
 
 import com.sd.backend.model.enums.TransactionStatus;
 import com.sd.backend.model.enums.TransactionType;
+import com.sd.backend.model.enums.CurrencyCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -38,7 +39,7 @@ public class Transaction {
 
     private BigDecimal amount;
 
-    private String currency;
+    private CurrencyCode currency;
 
     private String description;
 
@@ -52,8 +53,10 @@ public class Transaction {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Transaction)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Transaction))
+            return false;
         Transaction that = (Transaction) o;
         return id != null && Objects.equals(id, that.id);
     }

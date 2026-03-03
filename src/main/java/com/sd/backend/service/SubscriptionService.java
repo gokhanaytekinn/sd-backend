@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.sd.backend.model.enums.BillingCycle;
 
 @Service
 @RequiredArgsConstructor
@@ -130,7 +131,7 @@ public class SubscriptionService {
         // Recalculate renewal date if startDate or billingCycle changed
         if (request.getStartDate() != null || request.getBillingCycle() != null) {
             LocalDate startDate = subscription.getStartDate();
-            String billingCycle = subscription.getBillingCycle();
+            BillingCycle billingCycle = subscription.getBillingCycle();
             subscription.setRenewalDate(calculateRenewalDate(startDate, billingCycle));
         }
 
@@ -301,11 +302,12 @@ public class SubscriptionService {
         return toResponse(updatedSubscription, currentUserId);
     }
 
-    private LocalDate calculateRenewalDate(LocalDate startDate, String billingCycle) {
-        return switch (billingCycle.toLowerCase()) {
-            case "monthly" -> startDate.plusMonths(1);
-            case "yearly" -> startDate.plusYears(1);
-            case "quarterly" -> startDate.plusMonths(3);
+    private LocalDate calculateRenewalDate(LocalDate startDate, BillingCycle billingCycle) {
+        return switch (billingCycle) {
+            case MONTHLY -> startDate.plusMonths(1);
+            case YEARLY -> startDate.plusYears(1);
+            case QUARTERLY -> startDate.plusMonths(3);
+            case WEEKLY -> startDate.plusWeeks(1);
             default -> startDate.plusMonths(1);
         };
     }
