@@ -98,6 +98,8 @@ public class ConversionService {
                 subscription.getUser().getId(),
                 subscription.getName(),
                 subscription.getIcon(),
+                subscription.getCategory(),
+                null,
                 subscription.getStatus(),
                 subscription.getTier(),
                 subscription.getEndDate(),

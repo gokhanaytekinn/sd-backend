@@ -22,6 +22,9 @@ public class SubscriptionRequest {
 
     private String icon;
 
+    @NotBlank(message = "{validation.category.required}")
+    private String category;
+
     private UserTier tier;
 
     @NotNull(message = "Amount is required")

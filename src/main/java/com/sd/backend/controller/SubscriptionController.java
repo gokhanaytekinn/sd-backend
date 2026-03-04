@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +29,7 @@ import java.util.List;
 public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;
+    private final MessageSource messageSource;
 
     @GetMapping
     @Operation(summary = "Get user subscriptions", description = "Get all subscriptions for the authenticated user with optional filters")
@@ -70,6 +73,8 @@ public class SubscriptionController {
             @AuthenticationPrincipal UserDetails userDetails) {
         String userId = userDetails.getUsername();
         SubscriptionResponse subscription = subscriptionService.createSubscription(request, userId);
+        String message = messageSource.getMessage("subscription.create.success", null, LocaleContextHolder.getLocale());
+        subscription.setMessage(message);
         return ResponseEntity.status(HttpStatus.CREATED).body(subscription);
     }
 
@@ -81,6 +86,8 @@ public class SubscriptionController {
             @AuthenticationPrincipal UserDetails userDetails) {
         String userId = userDetails.getUsername();
         SubscriptionResponse subscription = subscriptionService.updateSubscription(id, request, userId);
+        String message = messageSource.getMessage("subscription.update.success", null, LocaleContextHolder.getLocale());
+        subscription.setMessage(message);
         return ResponseEntity.ok(subscription);
     }
 

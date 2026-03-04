@@ -73,6 +73,7 @@ public class SubscriptionService {
         subscription.setUser(user);
         subscription.setName(request.getName());
         subscription.setIcon(request.getIcon());
+        subscription.setCategory(request.getCategory());
         subscription.setTier(request.getTier());
         subscription.setAmount(request.getAmount());
         subscription.setCurrency(request.getCurrency());
@@ -108,6 +109,9 @@ public class SubscriptionService {
         }
         if (request.getIcon() != null) {
             subscription.setIcon(request.getIcon());
+        }
+        if (request.getCategory() != null) {
+            subscription.setCategory(request.getCategory());
         }
         if (request.getTier() != null) {
             subscription.setTier(request.getTier());
@@ -327,6 +331,8 @@ public class SubscriptionService {
                 subscription.getUser().getId(),
                 subscription.getName(),
                 subscription.getIcon(),
+                subscription.getCategory(),
+                null,
                 subscription.getStatus(),
                 subscription.getTier(),
                 subscription.getEndDate(),

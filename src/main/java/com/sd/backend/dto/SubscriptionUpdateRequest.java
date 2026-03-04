@@ -4,6 +4,7 @@ import com.sd.backend.model.enums.UserTier;
 import com.sd.backend.model.enums.CurrencyCode;
 import com.sd.backend.model.enums.BillingCycle;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,9 @@ public class SubscriptionUpdateRequest {
     private String name;
 
     private String icon;
+
+    @NotBlank(message = "{validation.category.required}")
+    private String category;
 
     private UserTier tier;
 

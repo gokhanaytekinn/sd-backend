@@ -39,6 +39,8 @@ public class Subscription {
 
     private String icon;
 
+    private String category;
+
     private UserTier tier;
 
     private LocalDate endDate;

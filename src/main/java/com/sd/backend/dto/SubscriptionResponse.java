@@ -21,6 +21,8 @@ public class SubscriptionResponse {
     private String userId;
     private String name;
     private String icon;
+    private String category;
+    private String message;
     private SubscriptionStatus status;
     private UserTier tier;
     private LocalDate endDate;
