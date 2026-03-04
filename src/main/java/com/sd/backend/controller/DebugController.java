@@ -22,9 +22,13 @@ public class DebugController {
     @GetMapping("/subscriptions/tomorrow")
     public List<Subscription> getTomorrowSubscriptions() {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
-        LocalDate dayAfterTomorrow = tomorrow.plusDays(1);
-        return subscriptionRepository.findByRenewalDateRangeAndStatusAndReminderEnabled(
-                tomorrow, dayAfterTomorrow, SubscriptionStatus.ACTIVE, true);
+        return subscriptionRepository.findByStatusAndReminderEnabled(SubscriptionStatus.ACTIVE, true)
+                .stream()
+                .filter(sub -> {
+                    LocalDate next = sub.getNextRenewalDate();
+                    return next != null && !next.isBefore(tomorrow) && next.isBefore(tomorrow.plusDays(1));
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @GetMapping("/subscriptions/all")

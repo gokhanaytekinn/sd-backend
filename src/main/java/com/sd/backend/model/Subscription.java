@@ -41,11 +41,8 @@ public class Subscription {
 
     private UserTier tier;
 
-    private LocalDate startDate;
-
     private LocalDate endDate;
 
-    private LocalDate renewalDate;
     private Integer billingDay;
     private Integer billingMonth;
 
@@ -91,5 +88,26 @@ public class Subscription {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public LocalDate getNextRenewalDate() {
+        if (billingDay == null)
+            return null;
+        LocalDate now = LocalDate.now();
+        if (billingCycle == BillingCycle.YEARLY && billingMonth != null) {
+            LocalDate target = LocalDate.of(now.getYear(), billingMonth,
+                    Math.min(billingDay, LocalDate.of(now.getYear(), billingMonth, 1).lengthOfMonth()));
+            if (target.isBefore(now)) {
+                target = target.plusYears(1);
+            }
+            return target;
+        } else {
+            LocalDate target = now.withDayOfMonth(Math.min(billingDay, now.lengthOfMonth()));
+            if (target.isBefore(now)) {
+                target = target.plusMonths(1);
+                target = target.withDayOfMonth(Math.min(billingDay, target.lengthOfMonth()));
+            }
+            return target;
+        }
     }
 }

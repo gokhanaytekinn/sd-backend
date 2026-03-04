@@ -23,9 +23,7 @@ public class SubscriptionResponse {
     private String icon;
     private SubscriptionStatus status;
     private UserTier tier;
-    private LocalDate startDate;
     private LocalDate endDate;
-    private LocalDate renewalDate;
     private Integer billingDay;
     private Integer billingMonth;
     private Boolean isSuspicious;

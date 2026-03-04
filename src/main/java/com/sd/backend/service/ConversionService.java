@@ -11,7 +11,7 @@ import com.sd.backend.model.enums.SubscriptionStatus;
 import com.sd.backend.model.enums.TransactionStatus;
 import com.sd.backend.model.enums.TransactionType;
 import com.sd.backend.model.enums.UserTier;
-import com.sd.backend.model.enums.BillingCycle;
+
 import com.sd.backend.repository.SubscriptionRepository;
 import com.sd.backend.repository.TransactionRepository;
 import com.sd.backend.repository.UserRepository;
@@ -47,8 +47,6 @@ public class ConversionService {
         subscription.setCurrency(request.getCurrency());
         subscription.setBillingCycle(request.getBillingCycle());
         subscription.setStatus(SubscriptionStatus.ACTIVE);
-        subscription.setStartDate(LocalDate.now());
-        subscription.setRenewalDate(calculateRenewalDate(request.getBillingCycle()));
         subscription.setBillingDay(LocalDate.now().getDayOfMonth());
         subscription.setBillingMonth(LocalDate.now().getMonthValue());
         subscription.setIsSuspicious(false);
@@ -94,17 +92,6 @@ public class ConversionService {
         userRepository.save(user);
     }
 
-    private LocalDate calculateRenewalDate(BillingCycle billingCycle) {
-        LocalDate now = LocalDate.now();
-        return switch (billingCycle) {
-            case MONTHLY -> now.plusMonths(1);
-            case YEARLY -> now.plusYears(1);
-            case QUARTERLY -> now.plusMonths(3);
-            case WEEKLY -> now.plusWeeks(1);
-            default -> now.plusMonths(1);
-        };
-    }
-
     private SubscriptionResponse toSubscriptionResponse(Subscription subscription) {
         return new SubscriptionResponse(
                 subscription.getId(),
@@ -113,9 +100,7 @@ public class ConversionService {
                 subscription.getIcon(),
                 subscription.getStatus(),
                 subscription.getTier(),
-                subscription.getStartDate(),
                 subscription.getEndDate(),
-                subscription.getRenewalDate(),
                 subscription.getBillingDay(),
                 subscription.getBillingMonth(),
                 subscription.getIsSuspicious(),

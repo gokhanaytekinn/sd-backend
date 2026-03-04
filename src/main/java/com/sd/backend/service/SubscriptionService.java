@@ -21,7 +21,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-import com.sd.backend.model.enums.BillingCycle;
 
 @Service
 @RequiredArgsConstructor
@@ -82,12 +81,6 @@ public class SubscriptionService {
         subscription.setBillingDay(request.getBillingDay());
         subscription.setBillingMonth(request.getBillingMonth());
 
-        // Calculate startDate and renewalDate based on day/month
-        LocalDate nextRenewal = calculateNextRenewalDate(request.getBillingDay(), request.getBillingMonth(),
-                request.getBillingCycle());
-        subscription.setStartDate(LocalDate.now()); // First payment is today (creation)
-        subscription.setRenewalDate(nextRenewal);
-
         subscription.setIsSuspicious(false);
         subscription.setIsApproved(false);
         subscription.setReminderEnabled(request.getReminderEnabled() != null ? request.getReminderEnabled() : false);
@@ -136,12 +129,6 @@ public class SubscriptionService {
         }
         if (request.getReminderEnabled() != null) {
             subscription.setReminderEnabled(request.getReminderEnabled());
-        }
-
-        // Recalculate renewal date if relevant fields changed
-        if (request.getBillingCycle() != null || request.getBillingDay() != null || request.getBillingMonth() != null) {
-            subscription.setRenewalDate(calculateNextRenewalDate(subscription.getBillingDay(),
-                    subscription.getBillingMonth(), subscription.getBillingCycle()));
         }
 
         subscription = subscriptionRepository.save(subscription);
@@ -221,10 +208,6 @@ public class SubscriptionService {
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setEndDate(null);
 
-        // Calculate next renewal date
-        subscription.setRenewalDate(calculateNextRenewalDate(subscription.getBillingDay(),
-                subscription.getBillingMonth(), subscription.getBillingCycle()));
-
         subscriptionRepository.save(subscription);
     }
 
@@ -233,22 +216,23 @@ public class SubscriptionService {
         LocalDate now = LocalDate.now();
         LocalDate limit = now.plusDays(10);
 
-        // Also check startDate for brand new subscriptions using the same logic as the
-        // scheduler
         List<Subscription> subscriptions = subscriptionRepository
                 .findByUserIdOrJointUserIdsContaining(userId, userId).stream()
                 .filter(sub -> {
                     if (sub.getStatus() != SubscriptionStatus.ACTIVE)
                         return false;
-                    LocalDate start = sub.getStartDate();
-                    LocalDate renewal = sub.getRenewalDate();
-                    return (start != null && !start.isBefore(now) && !start.isAfter(limit)) ||
-                            (renewal != null && !renewal.isBefore(now) && !renewal.isAfter(limit));
+                    LocalDate renewal = sub.getNextRenewalDate();
+                    return renewal != null && !renewal.isBefore(now) && !renewal.isAfter(limit);
                 })
                 .sorted((s1, s2) -> {
-                    // Use renewalDate if available, otherwise fallback to startDate
-                    LocalDate d1 = s1.getRenewalDate() != null ? s1.getRenewalDate() : s1.getStartDate();
-                    LocalDate d2 = s2.getRenewalDate() != null ? s2.getRenewalDate() : s2.getStartDate();
+                    LocalDate d1 = s1.getNextRenewalDate();
+                    LocalDate d2 = s2.getNextRenewalDate();
+                    if (d1 == null && d2 == null)
+                        return 0;
+                    if (d1 == null)
+                        return 1;
+                    if (d2 == null)
+                        return -1;
                     return d1.compareTo(d2);
                 })
                 .collect(Collectors.toList());
@@ -325,30 +309,6 @@ public class SubscriptionService {
         return toResponse(updatedSubscription, currentUserId);
     }
 
-    private LocalDate calculateNextRenewalDate(Integer billingDay, Integer billingMonth, BillingCycle billingCycle) {
-        if (billingDay == null)
-            return null;
-        LocalDate now = LocalDate.now();
-
-        if (billingCycle == BillingCycle.YEARLY && billingMonth != null) {
-            LocalDate target = LocalDate.of(now.getYear(), billingMonth,
-                    Math.min(billingDay, LocalDate.of(now.getYear(), billingMonth, 1).lengthOfMonth()));
-            if (target.isBefore(now)) {
-                target = target.plusYears(1);
-            }
-            return target;
-        } else {
-            // Default to monthly if cycle is not yearly or monthly (we use day only)
-            LocalDate target = now.withDayOfMonth(Math.min(billingDay, now.lengthOfMonth()));
-            if (target.isBefore(now)) {
-                target = target.plusMonths(1);
-                // Adjust for month length again
-                target = target.withDayOfMonth(Math.min(billingDay, target.lengthOfMonth()));
-            }
-            return target;
-        }
-    }
-
     private SubscriptionResponse toResponse(Subscription subscription, String currentUserId) {
         boolean isOwner = currentUserId != null && subscription.getUser().getId().equals(currentUserId);
 
@@ -369,9 +329,7 @@ public class SubscriptionService {
                 subscription.getIcon(),
                 subscription.getStatus(),
                 subscription.getTier(),
-                subscription.getStartDate(),
                 subscription.getEndDate(),
-                subscription.getRenewalDate(),
                 subscription.getBillingDay(),
                 subscription.getBillingMonth(),
                 subscription.getIsSuspicious(),
