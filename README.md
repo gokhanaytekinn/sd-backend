@@ -1,173 +1,138 @@
-# sd-backend
+# 1. Proje Başlığı
 
-Backend API for Subscription Management - **Java Spring Boot 3.2 with Java 17 & MongoDB**
+**Sub Tracker Backend API**
 
-## Overview
+# 2. Proje Açıklaması (Overview)
 
-Production-ready Java 17 Spring Boot backend providing comprehensive APIs for subscription management, product analysis, and data analytics. Supports Free/Premium tiers with JWT authentication, suspicious activity detection, and analytics.
+> [!NOTE]
+> Bu uygulamanın mimarisi, kod tabanı ve iş mantığı %100 oranında Yapay Zeka (AI) destekli araçlar tarafından tasarlanmış ve kodlanmıştır.
 
-## Tech Stack
+**Sub Tracker Backend**, abonelik ve düzenli harcama yönetimi uygulamasının arka uç servisidir. Kullanıcıların verilerini güvenle saklar, premium abonelik yönetimini üstlenir ve kapsamlı analitik raporların oluşturulması için REST tabanlı bir API sunar.
 
-- **Java 17** | **Spring Boot 3.2.1** | **Spring Security** | **Spring Data MongoDB**
-- **MongoDB Cloud** | **JWT (JJWT 0.12.3)** | **Maven** | **Lombok** | **Swagger/OpenAPI**
+# 3. Özellikler (Features)
 
-## Quick Start
+- **Kimlik Doğrulama:** BCrypt ile güvenli şifreleme ve 7 gün geçerli JWT tabanlı yetkilendirme altyapısı.
+- **Güvenli Veri Yönetimi:** Kullanıcılara ve aboneliklere ait verilerin tek merkezden güvenle yönetimi.
+- **Rol ve Seviye Sistemi:** Ücretsiz (Free) ve Premium kullanıcı seviyelerinin (Tiers) yetki kısıtlamaları.
 
-```bash
-# Build
-mvn clean package
+# 4. Teknolojiler (Tech Stack)
 
-# Run
-java -jar target/sd-backend-1.0.0.jar
+Arka uç servisleri, modern ve yüksek performanslı araçlarla inşa edilmiştir:
 
-# Or use Maven
-mvn spring-boot:run
-```
+- **Çekirdek:** Java 17, Spring Boot 3.2.1
+- **Güvenlik:** Spring Security, JWT (JJWT 0.12.3), BCrypt
+- **Veritabanı:** Spring Data MongoDB, MongoDB Cloud (Atlas)
+- **API Belgelendirmesi:** Swagger/OpenAPI
+- **Bağımlılık Yönetimi:** Maven, Lombok
 
-Access at: `http://localhost:8080`
+# 5. Mimari (Architecture)
 
-### 📚 API Documentation (Swagger UI)
+**Çok Katmanlı Mimari (N-Layered Architecture):**
+Uygulama temel olarak 3 ana katmana ayrılmıştır:
+- **Controller Katmanı:** REST API uç noktalarının (endpoints) sunulduğu ve HTTP isteklerinin karşılandığı katmandır.
+- **Service Katmanı:** İş mantığının (Business Logic) yer aldığı katmandır. Mimaride bağımlılığı en aza indirgemek için tasarlanmıştır.
+- **Repository Katmanı:** MongoDB veritabanı ile iletişimi yöneten katmandır.
 
-Interactive API documentation is available at:
-```
-http://localhost:8080/swagger-ui.html
-```
+Bu yapı sayesinde projenin sürdürülebilirliği, bakımı ve test edilebilirliği en üst seviyeye çıkarılmıştır.
 
-Features:
-- 📖 Complete API documentation for all endpoints
-- 🔐 Built-in JWT authentication testing
-- ✅ Try out APIs directly from your browser
-- 📝 Request/response examples
+# 6. Proje Yapısı (Project Structure)
 
-OpenAPI JSON specification:
-```
-http://localhost:8080/v3/api-docs
-```
-
-## MongoDB Configuration (wa-core style)
-
-The application uses MongoDB with simple URI and database name configuration:
-
-### Using Environment Variables (Recommended)
-```bash
-export MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority"
-export MONGODB_DATABASE="sd_backend"
-```
-
-### Or edit `src/main/resources/application.properties`:
-```properties
-spring.data.mongodb.uri=mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority
-spring.data.mongodb.database=sd_backend
-```
-
-### Default Configuration (Local MongoDB)
-If not configured, defaults to:
-- URI: `mongodb://localhost:27017`
-- Database: `sd_backend`
-
-## Additional Configuration
-
-Edit `src/main/resources/application.properties`:
-```properties
-# JWT Configuration
-jwt.secret=your-secret-key-at-least-32-characters
-jwt.expiration=604800000
-
-# CORS
-cors.allowed.origins=http://localhost:3000
-```
-
-## API Endpoints
-
-**Auth** (`/api/auth`): register, login, /me  
-**Subscriptions** (`/api/subscriptions`): CRUD, suspicious flagging, approval  
-**Transactions** (`/api/transactions`): paginated history  
-**Reminders** (`/api/reminders`): CRUD notifications  
-**Conversions** (`/api/conversions`): upgrade/downgrade  
-**Analytics** (`/api/analytics`): metrics & reports  
-
-## Example Usage
-
-```bash
-# Register
-curl -X POST http://localhost:8080/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"pass123","name":"John"}'
-
-# Login (get JWT token)
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user@example.com","password":"pass123"}'
-
-# Create Premium Subscription
-curl -X POST http://localhost:8080/api/subscriptions \
-  -H "Authorization: ******" \
-  -H "Content-Type: application/json" \
-  -d '{"tier":"PREMIUM","amount":9.99,"currency":"USD"}'
-```
-
-## Project Structure
+Projenin temel dizin yapısı:
 
 ```
-com.sd.backend/
-├── controller/      # 6 REST Controllers (24 endpoints)
-├── service/        # 6 Service classes
-├── repository/     # 4 MongoDB Repositories
-├── model/          # 4 Documents + 5 Enums
-├── dto/            # 13 DTOs
-├── security/       # JWT + Spring Security Config
-└── exception/      # Global error handling
+src/main/java/com/sd/backend/
+├── controller/      # REST Controllers (Örn: AuthController, SubscriptionController)
+├── service/        # İş sınıfları (Örn: AuthService, AnalyticsService)
+├── repository/     # MongoDB Repositories
+├── model/          # Veritabanı Entity modelleri (MongoDB Documents)
+├── dto/            # HTTP İstek/Yanıt aktarım nesneleri
+├── security/       # JWT yapılandırmaları ve Spring Security ayarları
+└── exception/      # Global ve özel hata yakalama mekanizmaları
 ```
 
-## Features
+# 7. Kurulum (Installation / Setup)
 
-✅ JWT Authentication (7-day expiration)  
-✅ BCrypt Password Hashing  
-✅ Subscription Management (Free/Premium)  
-✅ Suspicious Activity Detection & Approval  
-✅ Transaction History (Paginated)  
-✅ Reminder System  
-✅ User Tier Conversions  
-✅ Analytics & Metrics  
-✅ Global Exception Handling  
-✅ Bean Validation  
-✅ **Swagger/OpenAPI Documentation**  
+Lokal ortamda API hizmetini başlatmak için:
 
-## Database Schema
+1. Bağımlılıkları yükleyin ve derleyin:
+   ```bash
+   mvn clean package
+   ```
+2. Uygulamayı çalıştırın:
+   ```bash
+   java -jar target/sd-backend-1.0.0.jar
+   # veya
+   mvn spring-boot:run
+   ```
+3. API, varsayılan olarak `http://localhost:8080` adresinde çalışacaktır.
+4. Swagger arayüzü için: `http://localhost:8080/swagger-ui.html`
 
-MongoDB Collections:
-- **users**: Authentication, profile, tier (FREE/PREMIUM)
-- **subscriptions**: Status, billing, approval workflow  
-- **transactions**: Payment history with types & status
-- **reminders**: Scheduled notifications
+# 8. Konfigürasyon (Configuration)
 
-All documents use MongoDB auto-generated String IDs (ObjectId).
+Konfigürasyon ayarları `src/main/resources/application.properties` veya ortam değişkenleri üzerinden yapılabilir:
 
-## Development
+- **MongoDB Bağlantısı:**
+  ```properties
+  spring.data.mongodb.uri=mongodb+srv://<username>:<password>@cluster.mongodb.net/?retryWrites=true&w=majority
+  spring.data.mongodb.database=sd_backend
+  ```
+- **Kimlik Doğrulama:** Güvenliğiniz için `jwt.secret` ortam değişkenini en az 32 karakterlik bir anahtarla güncelleyin.
+- **CORS Ayarları:** İstemcinizin portuna izin vermek için `cors.allowed.origins` anahtarını kontrol edin.
 
-```bash
-# Build
-mvn clean install
+# 9. Uygulama Ekranları (Screenshots / UI)
 
-# Run tests
-mvn test
+Arka uç servisi olduğu için bir görsel grafik arayüz bulunmamaktadır. Ancak, `http://localhost:8080/swagger-ui.html` üzerinden ulaşılabilecek interaktif Swagger API dokümantasyonu paneli ile tüm uç noktaları test edebilir, örnek istek-cevap şemalarını görüntüleyebilirsiniz.
 
-# Package
-mvn clean package
-```
+# 10. Monetization
 
-## MongoDB Cloud Setup
+Backend servisi, istemciden (Android vb.) gelen **Premium** üyelik statüsünü tanımlar ve buna göre limit koyar. İstemci tarafındaki "Uygulama İçi Satın Alma" (In-App Purchase) işlemi başarılı iletildiğinde kullanıcının yetki (Tier) seviyesi Backend tarafından yükseltilir (örn. Free -> Premium).
 
-1. Create a MongoDB Atlas account at https://www.mongodb.com/cloud/atlas
-2. Create a new cluster
-3. Get your connection string (URI)
-4. Create a database named `sd_backend` (or use any name)
-5. Set environment variables or update application.properties
+# 11. Backend Entegrasyonu
 
-## License
+İstemci uygulamalarının arka uç API ile haberleşme kuralları:
+- İstek ve yanıtlar `application/json` formatındadır.
+- `/api/auth/register` ve `/api/auth/login` uç noktaları dışındaki tüm istekler, valid bir JWT token'a ihtiyaç duyar.
+- İsteklerde HTTP Header üzerinden token gönderimi: `Authorization: Bearer <token_değeri>`.
 
-ISC
+# 12. Test Durumu (Testing)
 
----
+Kararlı API yapısı için test kapsamı sürmektedir:
+- **Birim Testleri (Unit Testing):** Çekirdek iş (Business) logic fonksiyonları ve servis operasyonları JUnit ve Mockito kütüphaneleriyle test edilerek stabilite sağlanmaktadır. Sürekli entegrasyona dahil edilme aşamasındadır.
 
-Built with ☕ Java 17 & Spring Boot 3.2 & 🍃 MongoDB
+# 13. Yol Haritası (Roadmap)
+
+Gelecekte gerçekleştirilmesi planlanan bazı önemli eklentiler:
+- Daha gelişmiş kullanıcı panosu (Dashboard) yapılandırması.
+- Redis ile önbellekleme (Caching) sisteminin dahil edilerek yanıt istikrarının artırılması.
+- Kapsamlı üçüncü parti ödeme altyapı (örn. Stripe) webhook entegrasyonlarının eklenmesi.
+
+# 14. Katkı (Contributing)
+
+Projeye katkıda bulunmak, özellik eklemek veya bir hata (bug) düzeltmesi gerçekleştirmek isterseniz:
+1. Projeyi kendi profiliniz üzerine "Fork" yapın.
+2. Yeni bir "Branch" oluşturun (`git checkout -b feature/YeniÖzellik`).
+3. Değişikliklerinizi tamamlayın (`git commit -m 'Yeni Özellik: xyz'`).
+4. Geliştirmenizi deponuza gönderin (`git push origin feature/YeniÖzellik`).
+5. Ardından geri bildirim (Pull Request) bırakın.
+
+# 15. Lisans (License)
+
+Telif Hakkı (c) 2026 Gökhan Aytekin
+
+Tüm hakları saklıdır.
+
+Bu depo yalnızca görüntüleme ve eğitim amaçlı olarak herkese açık bir şekilde paylaşılmıştır.
+
+Yazarın açık yazılı izni olmadan şunları yapamazsınız:
+- Bu kodu üretim (production) ortamında kullanmak
+- Kodun önemli kısımlarını kopyalamak
+- Kodu yeniden dağıtmak
+- Kodu değiştirmek ve dağıtmak
+
+Bu kodu kullanmak isterseniz, lütfen yazarla iletişime geçin.
+
+# 16. İletişim (Contact)
+
+Hata raporlama veya iş birliği için:
+- Reponun "Issues" kısmından takip kartı oluşturabilirsiniz.
+- Veya organizatörlerin iletişim adresleri ile bağlantıya geçebilirsiniz.
