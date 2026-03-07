@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum UserTier {
     FREE(1),
-    PREMIUM(2);
+    MONTHLY(2),
+    YEARLY(3);
 
     private final int value;
 

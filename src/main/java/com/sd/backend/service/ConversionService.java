@@ -36,13 +36,15 @@ public class ConversionService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (user.getTier() == UserTier.PREMIUM) {
+        if (user.getTier() != UserTier.FREE) {
             throw new BadRequestException("User is already premium");
         }
 
+        UserTier targetTier = request.getBillingCycle() == BillingCycle.YEARLY ? UserTier.YEARLY : UserTier.MONTHLY;
+
         Subscription subscription = new Subscription();
         subscription.setUser(user);
-        subscription.setTier(UserTier.PREMIUM);
+        subscription.setTier(targetTier);
         subscription.setAmount(request.getAmount());
         subscription.setCurrency(request.getCurrency());
         subscription.setBillingCycle(request.getBillingCycle());
@@ -54,7 +56,7 @@ public class ConversionService {
 
         subscription = subscriptionRepository.save(subscription);
 
-        user.setTier(UserTier.PREMIUM);
+        user.setTier(targetTier);
         userRepository.save(user);
 
         Transaction transaction = new Transaction();
@@ -63,7 +65,7 @@ public class ConversionService {
         transaction.setType(TransactionType.UPGRADE);
         transaction.setAmount(request.getAmount());
         transaction.setCurrency(request.getCurrency());
-        transaction.setDescription("Conversion to Premium tier");
+        transaction.setDescription("Conversion to " + targetTier + " tier");
         transaction.setStatus(TransactionStatus.COMPLETED);
         transactionRepository.save(transaction);
 
