@@ -35,8 +35,7 @@ public class User {
     
     private String apnsToken;
     
-    @com.fasterxml.jackson.annotation.JsonProperty("isApnsSandbox")
-    private Boolean isApnsSandbox = false;
+    private Boolean apnsSandbox = false;
 
     private String platform; // "android" or "ios"
 

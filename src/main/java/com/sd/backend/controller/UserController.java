@@ -1,5 +1,6 @@
 package com.sd.backend.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import com.sd.backend.dto.FcmTokenRequest;
 import com.sd.backend.exception.ResourceNotFoundException;
 import com.sd.backend.model.User;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "User", description = "User management APIs")
 public class UserController {
 
@@ -31,10 +33,13 @@ public class UserController {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        log.info("Received push token update for user: {} - Platform: {}, Token: {}, Sandbox: {}", 
+                userId, request.getPlatform(), request.getToken(), request.isSandbox());
+
         user.setPlatform(request.getPlatform());
         if ("ios".equalsIgnoreCase(request.getPlatform())) {
             user.setApnsToken(request.getToken());
-            user.setIsApnsSandbox(request.isSandbox());
+            user.setApnsSandbox(request.isSandbox());
         } else {
             user.setFcmToken(request.getToken());
         }
