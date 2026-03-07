@@ -25,6 +25,8 @@ public class ApnsService {
     public void sendNotification(String deviceToken, String title, String body, boolean isSandbox) {
         ApnsClient client = isSandbox ? sandboxApnsClient : productionApnsClient;
         
+        log.info("Attempting to send notification to {} using {} environment", deviceToken, isSandbox ? "SANDBOX" : "PRODUCTION");
+        
         if (client == null) {
             log.error("APNs client is not initialized. Check your credentials.");
             return;
