@@ -27,7 +27,7 @@ public class InvitationService {
     private final SubscriptionRepository subscriptionRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
-    private final FcmService fcmService;
+    private final NotificationService notificationService;
     private final MessageSource messageSource;
 
     public void createInvitations(String subscriptionId, String inviterId, List<String> emails) {
@@ -55,19 +55,17 @@ public class InvitationService {
 
             // Send push notification if user exists and has a token
             userRepository.findByEmail(normalizedEmail).ifPresent(invitee -> {
-                if (invitee.getFcmToken() != null && !invitee.getFcmToken().isEmpty()) {
-                    Locale locale = new Locale(invitee.getLanguage() != null ? invitee.getLanguage() : "tr");
-                    String title = messageSource.getMessage("notification.invitation.title", null, locale);
-                    String body = messageSource.getMessage("notification.invitation.body",
-                            new Object[] { inviter.getName(), subscription.getName() }, locale);
+                Locale locale = new Locale(invitee.getLanguage() != null ? invitee.getLanguage() : "tr");
+                String title = messageSource.getMessage("notification.invitation.title", null, locale);
+                String body = messageSource.getMessage("notification.invitation.body",
+                        new Object[] { inviter.getName(), subscription.getName() }, locale);
 
-                    Map<String, String> data = new HashMap<>();
-                    data.put("type", "invitation");
-                    data.put("tab", "1");
-                    data.put("navigate_to", "subscriptions_list?tab=1");
+                Map<String, String> data = new HashMap<>();
+                data.put("type", "invitation");
+                data.put("tab", "1");
+                data.put("navigate_to", "subscriptions_list?tab=1");
 
-                    fcmService.sendNotification(invitee.getFcmToken(), title, body, data);
-                }
+                notificationService.sendNotification(invitee, title, body, data);
             });
         }
     }
