@@ -32,7 +32,7 @@ public class PurchaseService {
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı"));
 
         // Upgrade user to correct tier based on productId
-        UserTier targetTier = productId.contains("yearly") ? UserTier.YEARLY : UserTier.MONTHLY;
+        UserTier targetTier = productId.equals("com.nexus.sd.premium.yearly") ? UserTier.YEARLY : UserTier.MONTHLY;
         user.setTier(targetTier);
         return userRepository.save(user);
     }
