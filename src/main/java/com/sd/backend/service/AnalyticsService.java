@@ -95,7 +95,7 @@ public class AnalyticsService {
                 .filter(u -> u.getTier() == UserTier.FREE)
                 .count();
         long premiumUsers = allUsers.stream()
-                .filter(u -> u.getTier() == UserTier.PREMIUM)
+                .filter(u -> u.getTier() == UserTier.MONTHLY || u.getTier() == UserTier.YEARLY)
                 .count();
 
         double conversionRate = totalUsers == 0
@@ -127,7 +127,7 @@ public class AnalyticsService {
         List<User> allUsers = userRepository.findAll();
         long totalUsers = allUsers.size();
         long premiumUsers = allUsers.stream()
-                .filter(u -> u.getTier() == UserTier.PREMIUM)
+                .filter(u -> u.getTier() == UserTier.MONTHLY || u.getTier() == UserTier.YEARLY)
                 .count();
 
         double conversionRate = totalUsers == 0

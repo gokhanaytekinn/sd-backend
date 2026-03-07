@@ -31,8 +31,9 @@ public class PurchaseService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı bulunamadı"));
 
-        // Upgrade user to Premium
-        user.setTier(UserTier.PREMIUM);
+        // Upgrade user to correct tier based on productId
+        UserTier targetTier = productId.contains("yearly") ? UserTier.YEARLY : UserTier.MONTHLY;
+        user.setTier(targetTier);
         return userRepository.save(user);
     }
 }
