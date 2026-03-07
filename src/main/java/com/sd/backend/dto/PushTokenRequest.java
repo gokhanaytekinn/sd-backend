@@ -10,4 +10,6 @@ public class PushTokenRequest {
     
     @NotBlank
     private String platform; // "android" or "ios"
+    
+    private boolean isSandbox;
 }

@@ -16,12 +16,20 @@ import java.util.concurrent.ExecutionException;
 @RequiredArgsConstructor
 public class ApnsService {
 
-    private final ApnsClient apnsClient;
+    private final ApnsClient productionApnsClient;
+    private final ApnsClient sandboxApnsClient;
 
     @Value("${apns.bundle-id:com.nexus.sd}")
     private String bundleId;
 
-    public void sendNotification(String deviceToken, String title, String body) {
+    public void sendNotification(String deviceToken, String title, String body, boolean isSandbox) {
+        ApnsClient client = isSandbox ? sandboxApnsClient : productionApnsClient;
+        
+        if (client == null) {
+            log.error("APNs client is not initialized. Check your credentials.");
+            return;
+        }
+
         final String payload = String.format("{\"aps\":{\"alert\":{\"title\":\"%s\",\"body\":\"%s\"},\"sound\":\"default\"}}", title, body);
         final String token = TokenUtil.sanitizeTokenString(deviceToken);
 
@@ -29,7 +37,7 @@ public class ApnsService {
 
         try {
             final PushNotificationResponse<SimpleApnsPushNotification> pushNotificationResponse =
-                    apnsClient.sendNotification(pushNotification).get();
+                    client.sendNotification(pushNotification).get();
 
             if (pushNotificationResponse.isAccepted()) {
                 log.info("Push notification accepted by APNs gateway.");

@@ -35,6 +35,8 @@ public class User {
     
     private String apnsToken;
 
+    private Boolean isApnsSandbox = false;
+
     private String platform; // "android" or "ios"
 
     private Boolean notificationsEnabled = true;

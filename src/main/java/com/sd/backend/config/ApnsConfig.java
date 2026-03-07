@@ -23,13 +23,28 @@ public class ApnsConfig {
     private String keyFile;
 
     @Bean
-    public ApnsClient apnsClient() throws Exception {
-        InputStream keyInputStream = new ClassPathResource(keyFile).getInputStream();
-        ApnsSigningKey signingKey = ApnsSigningKey.loadFromInputStream(keyInputStream, teamId, keyId);
+    public ApnsClient productionApnsClient() throws Exception {
+        return createClient(ApnsClientBuilder.PRODUCTION_APNS_HOST);
+    }
 
-        return new ApnsClientBuilder()
-                .setSigningKey(signingKey)
-                .setApnsServer(ApnsClientBuilder.PRODUCTION_APNS_HOST)
-                .build();
+    @Bean
+    public ApnsClient sandboxApnsClient() throws Exception {
+        return createClient(ApnsClientBuilder.DEVELOPMENT_APNS_HOST);
+    }
+
+    private ApnsClient createClient(String host) throws Exception {
+        if ("PLACEHOLDER_KEY_ID".equals(keyId)) {
+            // Return a dummy client or handle gracefully during initial setup
+            return null;
+        }
+
+        try (InputStream keyInputStream = new ClassPathResource(keyFile).getInputStream()) {
+            ApnsSigningKey signingKey = ApnsSigningKey.loadFromInputStream(keyInputStream, teamId, keyId);
+
+            return new ApnsClientBuilder()
+                    .setSigningKey(signingKey)
+                    .setApnsServer(host)
+                    .build();
+        }
     }
 }
