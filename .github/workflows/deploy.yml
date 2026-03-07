@@ -21,6 +21,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Generate APNs Key File
+        run: echo "${{ secrets.APNS_KEY_CONTENT }}" > src/main/resources/apns_key.p8
+
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -84,6 +87,9 @@ jobs:
             -e MAIL_HOST="${{ secrets.MAIL_HOST }}" \
             -e MAIL_PORT="${{ secrets.MAIL_PORT }}" \
             -e FIREBASE_CONFIG_JSON='${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' \
+            -e APNS_KEY_ID="${{ secrets.APNS_KEY_ID }}" \
+            -e APNS_TEAM_ID="${{ secrets.APNS_TEAM_ID }}" \
+            -e APNS_BUNDLE_ID="${{ secrets.APNS_BUNDLE_ID }}" \
             ghcr.io/$REPO_LOWER:latest
 
           

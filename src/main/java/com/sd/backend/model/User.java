@@ -32,6 +32,10 @@ public class User {
     private String name;
 
     private String fcmToken;
+    
+    private String apnsToken;
+
+    private String platform; // "android" or "ios"
 
     private Boolean notificationsEnabled = true;
 

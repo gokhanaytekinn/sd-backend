@@ -3,7 +3,7 @@ package com.sd.backend.scheduler;
 import com.sd.backend.model.Subscription;
 import com.sd.backend.model.enums.SubscriptionStatus;
 import com.sd.backend.repository.SubscriptionRepository;
-import com.sd.backend.service.FcmService;
+import com.sd.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,7 +18,7 @@ import java.util.List;
 public class SubscriptionReminderScheduler {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final FcmService fcmService;
+    private final NotificationService notificationService;
 
     @Scheduled(cron = "0 40 11 * * ?", zone = "Europe/Istanbul") // 19:45 Istanbul time
 
@@ -43,14 +43,8 @@ public class SubscriptionReminderScheduler {
         log.info("Found {} potential subscriptions for tomorrow", subscriptions.size());
 
         for (Subscription sub : subscriptions) {
-            if (sub.getUser() != null && sub.getUser().getFcmToken() != null) {
-                // Check user's global notification setting
-                Boolean globalEnabled = sub.getUser().getNotificationsEnabled();
-                if (globalEnabled == null || globalEnabled) {
-                    localizeAndSend(sub);
-                } else {
-                    log.info("Skipping reminder for user {} - global notifications disabled", sub.getUser().getId());
-                }
+            if (sub.getUser() != null) {
+                localizeAndSend(sub);
             }
         }
     }
@@ -132,7 +126,7 @@ public class SubscriptionReminderScheduler {
         java.util.Map<String, String> data = new java.util.HashMap<>();
         data.put("navigate_to", "upcoming_subscriptions");
 
-        fcmService.sendNotification(sub.getUser().getFcmToken(), title, body, data);
+        notificationService.sendNotification(sub.getUser(), title, body, data);
         log.info("Sent localized ({}) reminder to user {} for subscription {}",
                 language, sub.getUser().getId(), sub.getName());
     }

@@ -21,17 +21,22 @@ public class UserController {
 
     private final UserRepository userRepository;
 
-    @PatchMapping("/fcm-token")
-    @Operation(summary = "Update FCM Token", description = "Update the Firebase Cloud Messaging token for the current user")
-    public ResponseEntity<Void> updateFcmToken(
-            @Valid @RequestBody FcmTokenRequest request,
+    @PatchMapping("/push-token")
+    @Operation(summary = "Update Push Token", description = "Update the push notification token for the current user based on platform")
+    public ResponseEntity<Void> updatePushToken(
+            @Valid @RequestBody com.sd.backend.dto.PushTokenRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
 
         String userId = userDetails.getUsername();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        user.setFcmToken(request.getToken());
+        user.setPlatform(request.getPlatform());
+        if ("ios".equalsIgnoreCase(request.getPlatform())) {
+            user.setApnsToken(request.getToken());
+        } else {
+            user.setFcmToken(request.getToken());
+        }
         userRepository.save(user);
 
         return ResponseEntity.ok().build();

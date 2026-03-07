@@ -137,6 +137,13 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- APNs Push Notifications -->
+        <dependency>
+            <groupId>com.eatthepath</groupId>
+            <artifactId>pushy</artifactId>
+            <version>0.15.4</version>
+        </dependency>
     </dependencies>
     
     <build>
