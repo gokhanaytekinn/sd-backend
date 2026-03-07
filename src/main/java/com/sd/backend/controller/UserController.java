@@ -34,6 +34,7 @@ public class UserController {
         user.setPlatform(request.getPlatform());
         if ("ios".equalsIgnoreCase(request.getPlatform())) {
             user.setApnsToken(request.getToken());
+            user.setIsApnsSandbox(request.isSandbox());
         } else {
             user.setFcmToken(request.getToken());
         }
