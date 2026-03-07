@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 public class ApnsService {
 
     private final ApnsClient apnsClient;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
     @Value("${apns.bundle-id:com.nexus.sd}")
     private String bundleId;
@@ -25,12 +26,22 @@ public class ApnsService {
             return;
         }
 
-        final String payload = String.format("{\"aps\":{\"alert\":{\"title\":\"%s\",\"body\":\"%s\"},\"sound\":\"default\"}}", title, body);
-        final String token = TokenUtil.sanitizeTokenString(deviceToken);
-
-        final SimpleApnsPushNotification pushNotification = new SimpleApnsPushNotification(token, bundleId, payload);
-
         try {
+            java.util.Map<String, Object> aps = new java.util.HashMap<>();
+            java.util.Map<String, Object> alert = new java.util.HashMap<>();
+            alert.put("title", title);
+            alert.put("body", body);
+            aps.put("alert", alert);
+            aps.put("sound", "default");
+
+            java.util.Map<String, Object> payloadMap = new java.util.HashMap<>();
+            payloadMap.put("aps", aps);
+
+            final String payload = objectMapper.writeValueAsString(payloadMap);
+            final String token = TokenUtil.sanitizeTokenString(deviceToken);
+
+            final SimpleApnsPushNotification pushNotification = new SimpleApnsPushNotification(token, bundleId, payload);
+
             final PushNotificationResponse<SimpleApnsPushNotification> pushNotificationResponse =
                     apnsClient.sendNotification(pushNotification).get();
 
