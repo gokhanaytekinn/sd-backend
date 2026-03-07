@@ -34,8 +34,6 @@ public class User {
     private String fcmToken;
     
     private String apnsToken;
-    
-    private Boolean apnsSandbox = false;
 
     private String platform; // "android" or "ios"
 

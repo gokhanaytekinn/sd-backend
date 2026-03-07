@@ -90,6 +90,7 @@ jobs:
             -e APNS_KEY_ID="${{ secrets.APNS_KEY_ID }}" \
             -e APNS_TEAM_ID="${{ secrets.APNS_TEAM_ID }}" \
             -e APNS_BUNDLE_ID="${{ secrets.APNS_BUNDLE_ID }}" \
+            -e APNS_SANDBOX="${{ secrets.APNS_SANDBOX }}" \
             ghcr.io/$REPO_LOWER:latest
 
           

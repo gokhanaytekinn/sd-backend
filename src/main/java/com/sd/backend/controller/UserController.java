@@ -33,13 +33,12 @@ public class UserController {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        log.info("Received push token update for user: {} - Platform: {}, Token: {}, Sandbox: {}", 
-                userId, request.getPlatform(), request.getToken(), request.isSandbox());
+        log.info("Received push token update for user: {} - Platform: {}, Token: {}", 
+                userId, request.getPlatform(), request.getToken());
 
         user.setPlatform(request.getPlatform());
         if ("ios".equalsIgnoreCase(request.getPlatform())) {
             user.setApnsToken(request.getToken());
-            user.setApnsSandbox(request.isSandbox());
         } else {
             user.setFcmToken(request.getToken());
         }

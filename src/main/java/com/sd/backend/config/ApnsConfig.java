@@ -22,24 +22,19 @@ public class ApnsConfig {
     @Value("${apns.key-file:apns_key.p8}")
     private String keyFile;
 
-    @Bean
-    public ApnsClient productionApnsClient() throws Exception {
-        return createClient(ApnsClientBuilder.PRODUCTION_APNS_HOST);
-    }
+    @Value("${apns.sandbox:false}")
+    private boolean isSandbox;
 
     @Bean
-    public ApnsClient sandboxApnsClient() throws Exception {
-        return createClient(ApnsClientBuilder.DEVELOPMENT_APNS_HOST);
-    }
-
-    private ApnsClient createClient(String host) throws Exception {
+    public ApnsClient apnsClient() throws Exception {
         if ("PLACEHOLDER_KEY_ID".equals(keyId)) {
-            // Return a dummy client or handle gracefully during initial setup
             return null;
         }
 
         try (InputStream keyInputStream = new ClassPathResource(keyFile).getInputStream()) {
             ApnsSigningKey signingKey = ApnsSigningKey.loadFromInputStream(keyInputStream, teamId, keyId);
+
+            String host = isSandbox ? ApnsClientBuilder.DEVELOPMENT_APNS_HOST : ApnsClientBuilder.PRODUCTION_APNS_HOST;
 
             return new ApnsClientBuilder()
                     .setSigningKey(signingKey)

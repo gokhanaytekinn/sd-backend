@@ -9,25 +9,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.ExecutionException;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ApnsService {
 
-    private final ApnsClient productionApnsClient;
-    private final ApnsClient sandboxApnsClient;
+    private final ApnsClient apnsClient;
 
     @Value("${apns.bundle-id:com.nexus.sd}")
     private String bundleId;
 
-    public void sendNotification(String deviceToken, String title, String body, boolean isSandbox) {
-        ApnsClient client = isSandbox ? sandboxApnsClient : productionApnsClient;
-        
-        log.info("Attempting to send notification to {} using {} environment", deviceToken, isSandbox ? "SANDBOX" : "PRODUCTION");
-        
-        if (client == null) {
+    public void sendNotification(String deviceToken, String title, String body) {
+        if (apnsClient == null) {
             log.error("APNs client is not initialized. Check your credentials.");
             return;
         }
@@ -39,20 +32,15 @@ public class ApnsService {
 
         try {
             final PushNotificationResponse<SimpleApnsPushNotification> pushNotificationResponse =
-                    client.sendNotification(pushNotification).get();
+                    apnsClient.sendNotification(pushNotification).get();
 
             if (pushNotificationResponse.isAccepted()) {
                 log.info("Push notification accepted by APNs gateway.");
             } else {
-                log.error("Notification rejected by the APNs gateway: " + pushNotificationResponse.getRejectionReason());
-
-                pushNotificationResponse.getTokenInvalidationTimestamp().ifPresent(timestamp -> {
-                    log.error("\t…and the token is invalid as of " + timestamp);
-                });
+                log.error("Notification rejected by the APNs gateway: {}", pushNotificationResponse.getRejectionReason());
             }
-        } catch (final ExecutionException | InterruptedException e) {
-            log.error("Failed to send push notification.");
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error("Failed to send push notification via APNs", e);
         }
     }
 }

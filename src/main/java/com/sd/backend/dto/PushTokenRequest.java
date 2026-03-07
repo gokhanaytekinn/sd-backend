@@ -10,7 +10,4 @@ public class PushTokenRequest {
     
     @NotBlank
     private String platform; // "android" or "ios"
-    
-    @com.fasterxml.jackson.annotation.JsonProperty("isSandbox")
-    private boolean sandbox;
 }
