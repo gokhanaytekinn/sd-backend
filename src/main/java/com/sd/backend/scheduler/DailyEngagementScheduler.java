@@ -23,7 +23,7 @@ public class DailyEngagementScheduler {
     private final NotificationService notificationService;
     private final MessageSource messageSource;
 
-    @Scheduled(cron = "0 0 20 * * ?", zone = "Europe/Istanbul") // Every day at 20:00 Istanbul time
+    @Scheduled(cron = "0 24 17 * * ?", zone = "Europe/Istanbul") // Every day at 20:00 Istanbul time
     public void sendDailyEngagementNotifications() {
         log.info("Starting daily engagement notification task...");
 
