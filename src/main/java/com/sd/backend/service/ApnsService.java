@@ -20,7 +20,7 @@ public class ApnsService {
     @Value("${apns.bundle-id:com.nexus.sd}")
     private String bundleId;
 
-    public void sendNotification(String deviceToken, String title, String body) {
+    public void sendNotification(String deviceToken, String title, String body, java.util.Map<String, String> data) {
         if (apnsClient == null) {
             log.error("APNs client is not initialized. Check your credentials.");
             return;
@@ -36,6 +36,10 @@ public class ApnsService {
 
             java.util.Map<String, Object> payloadMap = new java.util.HashMap<>();
             payloadMap.put("aps", aps);
+            
+            if (data != null) {
+                payloadMap.putAll(data);
+            }
 
             final String payload = objectMapper.writeValueAsString(payloadMap);
             final String token = TokenUtil.sanitizeTokenString(deviceToken);
