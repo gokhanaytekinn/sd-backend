@@ -24,7 +24,7 @@ public class NotificationService {
         if ("ios".equalsIgnoreCase(platform)) {
             if (user.getApnsToken() != null && !user.getApnsToken().isEmpty()) {
                 log.info("Sending APNs notification to user: {}", user.getEmail());
-                apnsService.sendNotification(user.getApnsToken(), title, body);
+                apnsService.sendNotification(user.getApnsToken(), title, body, data);
             } else {
                 log.warn("User {} is iOS but has no APNs token", user.getEmail());
             }
