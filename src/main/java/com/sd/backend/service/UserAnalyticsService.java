@@ -56,18 +56,28 @@ public class UserAnalyticsService {
 
     @Transactional(readOnly = true)
     public UserAnalyticsTrendResponse getTrends(String userId) {
-        // Simple mock for trends based on current subscriptions
-        // In a real app, this would query a transaction history or historical snapshots
-        UserAnalyticsSummaryResponse summary = getSummary(userId);
+        List<Subscription> subscriptions = subscriptionRepository.findByUserIdOrJointUserIdsContaining(userId, userId)
+                .stream()
+                .filter(s -> s.getStatus() == SubscriptionStatus.ACTIVE)
+                .collect(Collectors.toList());
+
         List<UserAnalyticsTrendResponse.MonthTrend> trends = new ArrayList<>();
-        
-        // Mocking last 6 months with slight variations
-        String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun"};
-        BigDecimal base = summary.getTotalMonthlyCost();
-        
-        for (int i = 0; i < 6; i++) {
-            BigDecimal variation = new BigDecimal(0.9 + (Math.random() * 0.2)); // 90% - 110%
-            trends.add(new UserAnalyticsTrendResponse.MonthTrend(months[i], base.multiply(variation).setScale(2, RoundingMode.HALF_UP)));
+        LocalDate now = LocalDate.now();
+
+        for (int i = 5; i >= 0; i--) {
+            LocalDate targetMonth = now.minusMonths(i);
+            String monthLabel = targetMonth.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH);
+            
+            BigDecimal monthlyTotal = BigDecimal.ZERO;
+            for (Subscription sub : subscriptions) {
+                // Check if subscription existed in that month
+                if (sub.getCreatedAt() != null && sub.getCreatedAt().toLocalDate().isBefore(targetMonth.withDayOfMonth(targetMonth.lengthOfMonth()).plusDays(1))) {
+                    BigDecimal monthlyCost = calculateMonthlyCost(sub);
+                    BigDecimal normalizedCost = convertToBaseCurrency(monthlyCost, sub.getCurrency());
+                    monthlyTotal = monthlyTotal.add(normalizedCost);
+                }
+            }
+            trends.add(new UserAnalyticsTrendResponse.MonthTrend(monthLabel, monthlyTotal.setScale(2, RoundingMode.HALF_UP)));
         }
 
         return UserAnalyticsTrendResponse.builder()
@@ -87,7 +97,7 @@ public class UserAnalyticsService {
         // Insight 1: Yearly vs Monthly
         long monthlyCount = subscriptions.stream().filter(s -> s.getBillingCycle() == BillingCycle.MONTHLY).count();
         if (monthlyCount > 2) {
-            insights.add("Bazı aylık aboneliklerinizi yıllık plana geçirerek yıllık bazda %15-20 tasarruf edebilirsiniz.");
+            insights.add("insight_yearly_optimization");
         }
 
         // Insight 2: High cost category
@@ -96,12 +106,12 @@ public class UserAnalyticsService {
                 .max(Map.Entry.comparingByValue())
                 .ifPresent(entry -> {
                     if (entry.getValue().compareTo(summary.getTotalMonthlyCost().multiply(new BigDecimal("0.5"))) > 0) {
-                        insights.add(entry.getKey() + " kategorisi toplam harcamanızın yarısından fazlasını oluşturuyor.");
+                        insights.add("insight_category_dominant:" + entry.getKey());
                     }
                 });
 
         if (insights.isEmpty()) {
-            insights.add("Harcamalarınız şu an dengeli görünüyor.");
+            insights.add("insight_balanced_spending");
         }
 
         return UserAnalyticsInsightResponse.builder()
