@@ -56,7 +56,7 @@ public class UserAnalyticsService {
             totalMonthly = totalMonthly.add(normalizedMonthlyCost);
             
             // Category breakdown (only truly useful if category is All)
-            String subCategory = sub.getCategory() != null ? sub.getCategory() : "Other";
+            String subCategory = sub.getCategory() != null ? sub.getCategory() : "category_other";
             categoryBreakdown.put(subCategory, categoryBreakdown.getOrDefault(subCategory, BigDecimal.ZERO).add(normalizedMonthlyCost));
 
             // Lifetime spent (estimate)
