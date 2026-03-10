@@ -35,20 +35,54 @@ public class UserAnalyticsService {
 
         BigDecimal totalMonthly = BigDecimal.ZERO;
         Map<String, BigDecimal> categoryBreakdown = new HashMap<>();
+        Map<String, UserAnalyticsSummaryResponse.LifetimeMetric> lifetimeSpent = new HashMap<>();
+        List<UpcomingPaymentDTO> upcomingPayments = new ArrayList<>();
+        LocalDate now = LocalDate.now();
 
         for (Subscription sub : subscriptions) {
             BigDecimal monthlyCost = calculateMonthlyCost(sub);
-            BigDecimal normalizedCost = convertToBaseCurrency(monthlyCost, sub.getCurrency());
+            BigDecimal normalizedMonthlyCost = convertToBaseCurrency(monthlyCost, sub.getCurrency());
             
-            totalMonthly = totalMonthly.add(normalizedCost);
+            totalMonthly = totalMonthly.add(normalizedMonthlyCost);
             
+            // Category breakdown
             String category = sub.getCategory() != null ? sub.getCategory() : "Other";
-            categoryBreakdown.put(category, categoryBreakdown.getOrDefault(category, BigDecimal.ZERO).add(normalizedCost));
+            categoryBreakdown.put(category, categoryBreakdown.getOrDefault(category, BigDecimal.ZERO).add(normalizedMonthlyCost));
+
+            // Lifetime spent (estimate if no transactions)
+            if (sub.getCreatedAt() != null) {
+                long daysAlive = java.time.temporal.ChronoUnit.DAYS.between(sub.getCreatedAt().toLocalDate(), now);
+                BigDecimal monthsAlive = new BigDecimal(Math.max(1, daysAlive)).divide(new BigDecimal("30"), 2, RoundingMode.HALF_UP);
+                BigDecimal totalSpent = normalizedMonthlyCost.multiply(monthsAlive).setScale(2, RoundingMode.HALF_UP);
+                lifetimeSpent.put(sub.getId(), UserAnalyticsSummaryResponse.LifetimeMetric.builder()
+                        .name(sub.getName())
+                        .totalAmount(totalSpent)
+                        .icon(sub.getIcon())
+                        .build());
+            }
+
+            // Upcoming payment (next 30 days)
+            LocalDate nextRenewal = sub.getNextRenewalDate();
+            if (nextRenewal != null && nextRenewal.isBefore(now.plusDays(31))) {
+                upcomingPayments.add(UpcomingPaymentDTO.builder()
+                        .subscriptionId(sub.getId())
+                        .subscriptionName(sub.getName())
+                        .amount(convertToBaseCurrency(sub.getAmount(), sub.getCurrency()))
+                        .paymentDate(nextRenewal)
+                        .icon(sub.getIcon())
+                        .build());
+            }
         }
+
+        // Sort upcoming payments by date
+        upcomingPayments.sort(java.util.Comparator.comparing(UpcomingPaymentDTO::getPaymentDate));
 
         return UserAnalyticsSummaryResponse.builder()
                 .totalMonthlyCost(totalMonthly.setScale(2, RoundingMode.HALF_UP))
                 .totalYearlyCost(totalMonthly.multiply(new BigDecimal("12")).setScale(2, RoundingMode.HALF_UP))
+                .dailyAverageCost(totalMonthly.divide(new BigDecimal("30"), 2, RoundingMode.HALF_UP))
+                .upcomingPayments(upcomingPayments)
+                .lifetimeSpent(lifetimeSpent)
                 .categoryBreakdown(categoryBreakdown)
                 .currency(CurrencyCode.TRY)
                 .build();

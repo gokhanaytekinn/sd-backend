@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -16,6 +17,19 @@ import java.util.Map;
 public class UserAnalyticsSummaryResponse {
     private BigDecimal totalMonthlyCost;
     private BigDecimal totalYearlyCost;
+    private BigDecimal dailyAverageCost;
+    private List<UpcomingPaymentDTO> upcomingPayments;
+    private Map<String, LifetimeMetric> lifetimeSpent;
     private Map<String, BigDecimal> categoryBreakdown;
     private CurrencyCode currency;
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class LifetimeMetric {
+        private String name;
+        private BigDecimal totalAmount;
+        private String icon;
+    }
 }
