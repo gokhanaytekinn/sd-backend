@@ -1,5 +1,6 @@
 package com.sd.backend.service;
 
+import com.sd.backend.dto.UpcomingPaymentDTO;
 import com.sd.backend.dto.UserAnalyticsInsightResponse;
 import com.sd.backend.dto.UserAnalyticsSummaryResponse;
 import com.sd.backend.dto.UserAnalyticsTrendResponse;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
