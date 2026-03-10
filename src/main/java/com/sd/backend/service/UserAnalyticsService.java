@@ -147,6 +147,21 @@ public class UserAnalyticsService {
                     }
                 });
 
+        // Insight 3: Duplicate Categories (Savings Potential)
+        Map<String, Long> categoryCounts = subscriptions.stream()
+                .collect(Collectors.groupingBy(Subscription::getCategory, Collectors.counting()));
+        categoryCounts.forEach((cat, count) -> {
+            if (count >= 2) {
+                insights.add("insight_saving_potential:" + cat);
+            }
+        });
+
+        // Insight 4: Cycle Suggestion (Long term monthly)
+        // For demo, if a user has many monthly (>4), suggest yearly
+        if (monthlyCount > 4) {
+             insights.add("insight_cycle_suggestion");
+        }
+
         if (insights.isEmpty()) {
             insights.add("insight_balanced_spending");
         }
