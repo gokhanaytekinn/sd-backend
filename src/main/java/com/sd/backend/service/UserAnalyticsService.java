@@ -1,6 +1,6 @@
 package com.sd.backend.service;
 
-import com.sd.backend.dto.UpcomingPaymentDTO;
+import com.sd.backend.dto.CalendarEventDTO;
 import com.sd.backend.dto.UserAnalyticsInsightResponse;
 import com.sd.backend.dto.UserAnalyticsSummaryResponse;
 import com.sd.backend.dto.UserAnalyticsTrendResponse;
@@ -29,29 +29,37 @@ public class UserAnalyticsService {
     private final SubscriptionRepository subscriptionRepository;
 
     @Transactional(readOnly = true)
-    public UserAnalyticsSummaryResponse getSummary(String userId) {
-        List<Subscription> subscriptions = subscriptionRepository.findByUserIdOrJointUserIdsContaining(userId, userId)
+    public UserAnalyticsSummaryResponse getSummary(String userId, String category) {
+        List<Subscription> allSubscriptions = subscriptionRepository.findByUserIdOrJointUserIdsContaining(userId, userId)
                 .stream()
                 .filter(s -> s.getStatus() == SubscriptionStatus.ACTIVE)
                 .collect(Collectors.toList());
 
+        List<Subscription> filteredSubscriptions = allSubscriptions;
+        if (category != null && !category.equalsIgnoreCase("All")) {
+            filteredSubscriptions = allSubscriptions.stream()
+                    .filter(s -> category.equalsIgnoreCase(s.getCategory()))
+                    .collect(Collectors.toList());
+        }
+
         BigDecimal totalMonthly = BigDecimal.ZERO;
         Map<String, BigDecimal> categoryBreakdown = new HashMap<>();
         Map<String, UserAnalyticsSummaryResponse.LifetimeMetric> lifetimeSpent = new HashMap<>();
-        List<UpcomingPaymentDTO> upcomingPayments = new ArrayList<>();
+        List<CalendarEventDTO> calendarEvents = new ArrayList<>();
         LocalDate now = LocalDate.now();
 
-        for (Subscription sub : subscriptions) {
+        // Calculate metrics for filtered subscriptions
+        for (Subscription sub : filteredSubscriptions) {
             BigDecimal monthlyCost = calculateMonthlyCost(sub);
             BigDecimal normalizedMonthlyCost = convertToBaseCurrency(monthlyCost, sub.getCurrency());
             
             totalMonthly = totalMonthly.add(normalizedMonthlyCost);
             
-            // Category breakdown
-            String category = sub.getCategory() != null ? sub.getCategory() : "Other";
-            categoryBreakdown.put(category, categoryBreakdown.getOrDefault(category, BigDecimal.ZERO).add(normalizedMonthlyCost));
+            // Category breakdown (only truly useful if category is All)
+            String subCategory = sub.getCategory() != null ? sub.getCategory() : "Other";
+            categoryBreakdown.put(subCategory, categoryBreakdown.getOrDefault(subCategory, BigDecimal.ZERO).add(normalizedMonthlyCost));
 
-            // Lifetime spent (estimate if no transactions)
+            // Lifetime spent (estimate)
             if (sub.getCreatedAt() != null) {
                 long daysAlive = java.time.temporal.ChronoUnit.DAYS.between(sub.getCreatedAt().toLocalDate(), now);
                 BigDecimal monthsAlive = new BigDecimal(Math.max(1, daysAlive)).divide(new BigDecimal("30"), 2, RoundingMode.HALF_UP);
@@ -62,31 +70,55 @@ public class UserAnalyticsService {
                         .icon(sub.getIcon())
                         .build());
             }
-
-            // Upcoming payment (next 30 days)
-            LocalDate nextRenewal = sub.getNextRenewalDate();
-            if (nextRenewal != null && nextRenewal.isBefore(now.plusDays(31))) {
-                upcomingPayments.add(UpcomingPaymentDTO.builder()
-                        .subscriptionId(sub.getId())
-                        .subscriptionName(sub.getName())
-                        .amount(convertToBaseCurrency(sub.getAmount(), sub.getCurrency()))
-                        .paymentDate(nextRenewal)
-                        .icon(sub.getIcon())
-                        .build());
-            }
         }
 
-        // Sort upcoming payments by date
-        upcomingPayments.sort(java.util.Comparator.comparing(UpcomingPaymentDTO::getPaymentDate));
+        // Generate calendar events for ALL active subscriptions (or filtered depending on preference? 
+        // User said: "o seçtiği kategoriye göre aşağıdaki grafikler hazırlansın... abonelik yenileme tarihlerinde mavi nokta olsun")
+        // It's probably better to show EVERYTHING on calendar unless the filter specifically should apply to calendar too.
+        // Given the request, I'll filter the calendar too.
+        for (Subscription sub : filteredSubscriptions) {
+            addAllRenewalDatesForYear(sub, calendarEvents);
+        }
 
         return UserAnalyticsSummaryResponse.builder()
                 .totalMonthlyCost(totalMonthly.setScale(2, RoundingMode.HALF_UP))
                 .totalYearlyCost(totalMonthly.multiply(new BigDecimal("12")).setScale(2, RoundingMode.HALF_UP))
                 .dailyAverageCost(totalMonthly.divide(new BigDecimal("30"), 2, RoundingMode.HALF_UP))
-                .upcomingPayments(upcomingPayments)
+                .calendarEvents(calendarEvents)
                 .lifetimeSpent(lifetimeSpent)
                 .categoryBreakdown(categoryBreakdown)
                 .currency(CurrencyCode.TRY)
+                .build();
+    }
+
+    private void addAllRenewalDatesForYear(Subscription sub, List<CalendarEventDTO> events) {
+        if (sub.getBillingDay() == null) return;
+        
+        LocalDate now = LocalDate.now();
+        LocalDate endOfYear = now.plusYears(1);
+        
+        // This is a simplified renewal calculator
+        if (sub.getBillingCycle() == BillingCycle.MONTHLY) {
+            for (int i = 0; i <= 12; i++) {
+                LocalDate date = now.plusMonths(i).withDayOfMonth(Math.min(sub.getBillingDay(), now.plusMonths(i).lengthOfMonth()));
+                if (!date.isBefore(now)) {
+                    events.add(createEvent(sub, date));
+                }
+            }
+        } else if (sub.getBillingCycle() == BillingCycle.YEARLY && sub.getBillingMonth() != null) {
+            LocalDate date = LocalDate.of(now.getYear(), sub.getBillingMonth(), Math.min(sub.getBillingDay(), LocalDate.of(now.getYear(), sub.getBillingMonth(), 1).lengthOfMonth()));
+            if (date.isBefore(now)) date = date.plusYears(1);
+            events.add(createEvent(sub, date));
+        }
+    }
+
+    private CalendarEventDTO createEvent(Subscription sub, LocalDate date) {
+        return CalendarEventDTO.builder()
+                .subscriptionId(sub.getId())
+                .subscriptionName(sub.getName())
+                .amount(convertToBaseCurrency(sub.getAmount(), sub.getCurrency()))
+                .paymentDate(date)
+                .icon(sub.getIcon())
                 .build();
     }
 
