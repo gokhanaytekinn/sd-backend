@@ -33,12 +33,6 @@ public class UserAnalyticsController {
         return ResponseEntity.ok(userAnalyticsService.getSummary(userId, category));
     }
 
-    @GetMapping("/trends")
-    @Operation(summary = "Get spending trends", description = "Get spending trends for the last 6 months for the authenticated user")
-    public ResponseEntity<UserAnalyticsTrendResponse> getTrends(@AuthenticationPrincipal UserDetails userDetails) {
-        String userId = userDetails.getUsername();
-        return ResponseEntity.ok(userAnalyticsService.getTrends(userId));
-    }
 
     @GetMapping("/insights")
     @Operation(summary = "Get smart insights", description = "Get personalized tips and insights about spending habits")
