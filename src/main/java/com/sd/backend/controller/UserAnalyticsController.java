@@ -25,10 +25,12 @@ public class UserAnalyticsController {
     private final UserAnalyticsService userAnalyticsService;
 
     @GetMapping("/summary")
-    @Operation(summary = "Get personal spending summary", description = "Get normalized monthly and yearly spending summary for the authenticated user")
-    public ResponseEntity<UserAnalyticsSummaryResponse> getSummary(@AuthenticationPrincipal UserDetails userDetails) {
+    @Operation(summary = "Get personal spending summary", description = "Get normalized monthly and yearly spending summary for the authenticated user, optionally filtered by category")
+    public ResponseEntity<UserAnalyticsSummaryResponse> getSummary(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String category) {
         String userId = userDetails.getUsername();
-        return ResponseEntity.ok(userAnalyticsService.getSummary(userId));
+        return ResponseEntity.ok(userAnalyticsService.getSummary(userId, category));
     }
 
     @GetMapping("/trends")
