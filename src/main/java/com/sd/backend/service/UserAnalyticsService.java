@@ -35,20 +35,54 @@ public class UserAnalyticsService {
 
         BigDecimal totalMonthly = BigDecimal.ZERO;
         Map<String, BigDecimal> categoryBreakdown = new HashMap<>();
+        Map<String, UserAnalyticsSummaryResponse.LifetimeMetric> lifetimeSpent = new HashMap<>();
+        List<UpcomingPaymentDTO> upcomingPayments = new ArrayList<>();
+        LocalDate now = LocalDate.now();
 
         for (Subscription sub : subscriptions) {
             BigDecimal monthlyCost = calculateMonthlyCost(sub);
-            BigDecimal normalizedCost = convertToBaseCurrency(monthlyCost, sub.getCurrency());
+            BigDecimal normalizedMonthlyCost = convertToBaseCurrency(monthlyCost, sub.getCurrency());
             
-            totalMonthly = totalMonthly.add(normalizedCost);
+            totalMonthly = totalMonthly.add(normalizedMonthlyCost);
             
+            // Category breakdown
             String category = sub.getCategory() != null ? sub.getCategory() : "Other";
-            categoryBreakdown.put(category, categoryBreakdown.getOrDefault(category, BigDecimal.ZERO).add(normalizedCost));
+            categoryBreakdown.put(category, categoryBreakdown.getOrDefault(category, BigDecimal.ZERO).add(normalizedMonthlyCost));
+
+            // Lifetime spent (estimate if no transactions)
+            if (sub.getCreatedAt() != null) {
+                long daysAlive = java.time.temporal.ChronoUnit.DAYS.between(sub.getCreatedAt().toLocalDate(), now);
+                BigDecimal monthsAlive = new BigDecimal(Math.max(1, daysAlive)).divide(new BigDecimal("30"), 2, RoundingMode.HALF_UP);
+                BigDecimal totalSpent = normalizedMonthlyCost.multiply(monthsAlive).setScale(2, RoundingMode.HALF_UP);
+                lifetimeSpent.put(sub.getId(), UserAnalyticsSummaryResponse.LifetimeMetric.builder()
+                        .name(sub.getName())
+                        .totalAmount(totalSpent)
+                        .icon(sub.getIcon())
+                        .build());
+            }
+
+            // Upcoming payment (next 30 days)
+            LocalDate nextRenewal = sub.getNextRenewalDate();
+            if (nextRenewal != null && nextRenewal.isBefore(now.plusDays(31))) {
+                upcomingPayments.add(UpcomingPaymentDTO.builder()
+                        .subscriptionId(sub.getId())
+                        .subscriptionName(sub.getName())
+                        .amount(convertToBaseCurrency(sub.getAmount(), sub.getCurrency()))
+                        .paymentDate(nextRenewal)
+                        .icon(sub.getIcon())
+                        .build());
+            }
         }
+
+        // Sort upcoming payments by date
+        upcomingPayments.sort(java.util.Comparator.comparing(UpcomingPaymentDTO::getPaymentDate));
 
         return UserAnalyticsSummaryResponse.builder()
                 .totalMonthlyCost(totalMonthly.setScale(2, RoundingMode.HALF_UP))
                 .totalYearlyCost(totalMonthly.multiply(new BigDecimal("12")).setScale(2, RoundingMode.HALF_UP))
+                .dailyAverageCost(totalMonthly.divide(new BigDecimal("30"), 2, RoundingMode.HALF_UP))
+                .upcomingPayments(upcomingPayments)
+                .lifetimeSpent(lifetimeSpent)
                 .categoryBreakdown(categoryBreakdown)
                 .currency(CurrencyCode.TRY)
                 .build();
@@ -56,18 +90,28 @@ public class UserAnalyticsService {
 
     @Transactional(readOnly = true)
     public UserAnalyticsTrendResponse getTrends(String userId) {
-        // Simple mock for trends based on current subscriptions
-        // In a real app, this would query a transaction history or historical snapshots
-        UserAnalyticsSummaryResponse summary = getSummary(userId);
+        List<Subscription> subscriptions = subscriptionRepository.findByUserIdOrJointUserIdsContaining(userId, userId)
+                .stream()
+                .filter(s -> s.getStatus() == SubscriptionStatus.ACTIVE)
+                .collect(Collectors.toList());
+
         List<UserAnalyticsTrendResponse.MonthTrend> trends = new ArrayList<>();
-        
-        // Mocking last 6 months with slight variations
-        String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun"};
-        BigDecimal base = summary.getTotalMonthlyCost();
-        
-        for (int i = 0; i < 6; i++) {
-            BigDecimal variation = new BigDecimal(0.9 + (Math.random() * 0.2)); // 90% - 110%
-            trends.add(new UserAnalyticsTrendResponse.MonthTrend(months[i], base.multiply(variation).setScale(2, RoundingMode.HALF_UP)));
+        LocalDate now = LocalDate.now();
+
+        for (int i = 5; i >= 0; i--) {
+            LocalDate targetMonth = now.minusMonths(i);
+            String monthLabel = targetMonth.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH);
+            
+            BigDecimal monthlyTotal = BigDecimal.ZERO;
+            for (Subscription sub : subscriptions) {
+                // Check if subscription existed in that month
+                if (sub.getCreatedAt() != null && sub.getCreatedAt().toLocalDate().isBefore(targetMonth.withDayOfMonth(targetMonth.lengthOfMonth()).plusDays(1))) {
+                    BigDecimal monthlyCost = calculateMonthlyCost(sub);
+                    BigDecimal normalizedCost = convertToBaseCurrency(monthlyCost, sub.getCurrency());
+                    monthlyTotal = monthlyTotal.add(normalizedCost);
+                }
+            }
+            trends.add(new UserAnalyticsTrendResponse.MonthTrend(monthLabel, monthlyTotal.setScale(2, RoundingMode.HALF_UP)));
         }
 
         return UserAnalyticsTrendResponse.builder()
@@ -87,7 +131,7 @@ public class UserAnalyticsService {
         // Insight 1: Yearly vs Monthly
         long monthlyCount = subscriptions.stream().filter(s -> s.getBillingCycle() == BillingCycle.MONTHLY).count();
         if (monthlyCount > 2) {
-            insights.add("Bazı aylık aboneliklerinizi yıllık plana geçirerek yıllık bazda %15-20 tasarruf edebilirsiniz.");
+            insights.add("insight_yearly_optimization");
         }
 
         // Insight 2: High cost category
@@ -96,12 +140,12 @@ public class UserAnalyticsService {
                 .max(Map.Entry.comparingByValue())
                 .ifPresent(entry -> {
                     if (entry.getValue().compareTo(summary.getTotalMonthlyCost().multiply(new BigDecimal("0.5"))) > 0) {
-                        insights.add(entry.getKey() + " kategorisi toplam harcamanızın yarısından fazlasını oluşturuyor.");
+                        insights.add("insight_category_dominant:" + entry.getKey());
                     }
                 });
 
         if (insights.isEmpty()) {
-            insights.add("Harcamalarınız şu an dengeli görünüyor.");
+            insights.add("insight_balanced_spending");
         }
 
         return UserAnalyticsInsightResponse.builder()
