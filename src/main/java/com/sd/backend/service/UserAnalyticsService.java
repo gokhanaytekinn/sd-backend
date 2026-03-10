@@ -169,7 +169,7 @@ public class UserAnalyticsService {
         }
 
         // Insight 2: High cost category
-        UserAnalyticsSummaryResponse summary = getSummary(userId);
+        UserAnalyticsSummaryResponse summary = getSummary(userId, null);
         summary.getCategoryBreakdown().entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .ifPresent(entry -> {
