@@ -1,0 +1,18 @@
+# AI Development Standards for SD Backend
+
+## Project Architecture & Tech Stack
+- **Framework:** Spring Boot (Java)
+- **Database:** MongoDB (via Spring Data MongoDB)
+- **Important Libraries:** Lombok, Spring Security (JWT), Springdoc OpenAPI (Swagger)
+
+## Core Coding Principles for AI Agents
+1. **World-Class Enterprise Standards:** All code changes must adhere to high scalability, performant, and clean code principles.
+2. **Memory Management (OOM Prevention):** NEVER use `findAll()` or load unbound lists into memory for collections that can grow infinitely (like `users` or `subscriptions`). MUST ALWAYS use `Pageable` explicitly for batch processing (Chunking). Database-level filtering MUST be preferred over in-memory Java Stream filtering (`.stream().filter()`).
+3. **Configuration & Twelve-Factor App:** NO hardcoded magic strings, unlocalized dates, cron expressions, or timezones in the code. All configurations MUST be placed in `application.properties` and injected via `@Value` or `@ConfigurationProperties`.
+4. **Separation of Concerns:** Keep `@Scheduled` tasks, Controllers, and Repositories "dumb". ALL business logic MUST reside in the `@Service` layer to ensure it is 100% testable.
+5. **Internationalization (i18n):** NO embedded `switch` statements for languages. Use `messages_*.properties` files exclusively for localized text. Rely on Spring's `MessageSource` to resolve translations dynamically.
+6. **Resilience & Fault Tolerance:** When integrating with external APIs (like APNs, FCM, Email), provide proper error handling, try-catch isolation per-user in batch jobs, and consider `@Retryable` or Resilience4j for rate-limiting protection.
+7. **Clean Code:** Remove dead code, avoid deep nesting, use descriptive variable names, and favor small, focused classes mapping perfectly to Single Responsibility Principle.
+8. **Language Requirement (Turkish):** ALL communication, including implementation plans, task descriptions, commit messages, comments, and direct responses to the user MUST be in Turkish.
+
+Failure to follow these rules violates the established world-class architecture of this project.
