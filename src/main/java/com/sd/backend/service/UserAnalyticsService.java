@@ -3,7 +3,6 @@ package com.sd.backend.service;
 import com.sd.backend.dto.CalendarEventDTO;
 import com.sd.backend.dto.UserAnalyticsInsightResponse;
 import com.sd.backend.dto.UserAnalyticsSummaryResponse;
-import com.sd.backend.dto.UserAnalyticsTrendResponse;
 import com.sd.backend.model.Subscription;
 import com.sd.backend.model.enums.BillingCycle;
 import com.sd.backend.model.enums.CurrencyCode;
