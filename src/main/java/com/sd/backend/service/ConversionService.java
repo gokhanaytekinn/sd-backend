@@ -119,6 +119,7 @@ public class ConversionService {
                 subscription.getReminderEnabled(),
                 true, // Converter result is always for the owner
                 Collections.emptyList(),
+                subscription.getIsFreeTrial(),
                 subscription.getCreatedAt(),
                 subscription.getUpdatedAt());
     }
