@@ -2,7 +2,6 @@ package com.sd.backend.controller;
 
 import com.sd.backend.dto.UserAnalyticsInsightResponse;
 import com.sd.backend.dto.UserAnalyticsSummaryResponse;
-import com.sd.backend.dto.UserAnalyticsTrendResponse;
 import com.sd.backend.service.UserAnalyticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
