@@ -38,5 +38,7 @@ public class SubscriptionUpdateRequest {
 
     private Boolean reminderEnabled;
 
+    private Boolean isFreeTrial;
+
     private java.util.List<String> jointEmails;
 }

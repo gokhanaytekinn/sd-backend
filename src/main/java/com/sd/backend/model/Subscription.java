@@ -66,6 +66,8 @@ public class Subscription {
 
     private Boolean reminderEnabled = false;
 
+    private Boolean isFreeTrial = false;
+
     @CreatedDate
     private LocalDateTime createdAt;
 

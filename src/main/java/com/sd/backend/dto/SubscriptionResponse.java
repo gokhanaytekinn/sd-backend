@@ -39,6 +39,7 @@ public class SubscriptionResponse {
     private Boolean reminderEnabled;
     private Boolean owner;
     private List<InvitationParticipant> participants;
+    private Boolean isFreeTrial;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

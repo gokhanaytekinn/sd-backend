@@ -56,7 +56,7 @@ public class UserAnalyticsService {
             totalMonthly = totalMonthly.add(normalizedMonthlyCost);
             
             // Category breakdown (only truly useful if category is All)
-            String subCategory = sub.getCategory() != null ? sub.getCategory() : "Other";
+            String subCategory = sub.getCategory() != null ? sub.getCategory() : "category_other";
             categoryBreakdown.put(subCategory, categoryBreakdown.getOrDefault(subCategory, BigDecimal.ZERO).add(normalizedMonthlyCost));
 
             // Lifetime spent (estimate)
@@ -83,7 +83,6 @@ public class UserAnalyticsService {
         return UserAnalyticsSummaryResponse.builder()
                 .totalMonthlyCost(totalMonthly.setScale(2, RoundingMode.HALF_UP))
                 .totalYearlyCost(totalMonthly.multiply(new BigDecimal("12")).setScale(2, RoundingMode.HALF_UP))
-                .dailyAverageCost(totalMonthly.divide(new BigDecimal("30"), 2, RoundingMode.HALF_UP))
                 .calendarEvents(calendarEvents)
                 .lifetimeSpent(lifetimeSpent)
                 .categoryBreakdown(categoryBreakdown)
@@ -122,36 +121,6 @@ public class UserAnalyticsService {
                 .build();
     }
 
-    @Transactional(readOnly = true)
-    public UserAnalyticsTrendResponse getTrends(String userId) {
-        List<Subscription> subscriptions = subscriptionRepository.findByUserIdOrJointUserIdsContaining(userId, userId)
-                .stream()
-                .filter(s -> s.getStatus() == SubscriptionStatus.ACTIVE)
-                .collect(Collectors.toList());
-
-        List<UserAnalyticsTrendResponse.MonthTrend> trends = new ArrayList<>();
-        LocalDate now = LocalDate.now();
-
-        for (int i = 5; i >= 0; i--) {
-            LocalDate targetMonth = now.minusMonths(i);
-            String monthLabel = targetMonth.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH);
-            
-            BigDecimal monthlyTotal = BigDecimal.ZERO;
-            for (Subscription sub : subscriptions) {
-                // Check if subscription existed in that month
-                if (sub.getCreatedAt() != null && sub.getCreatedAt().toLocalDate().isBefore(targetMonth.withDayOfMonth(targetMonth.lengthOfMonth()).plusDays(1))) {
-                    BigDecimal monthlyCost = calculateMonthlyCost(sub);
-                    BigDecimal normalizedCost = convertToBaseCurrency(monthlyCost, sub.getCurrency());
-                    monthlyTotal = monthlyTotal.add(normalizedCost);
-                }
-            }
-            trends.add(new UserAnalyticsTrendResponse.MonthTrend(monthLabel, monthlyTotal.setScale(2, RoundingMode.HALF_UP)));
-        }
-
-        return UserAnalyticsTrendResponse.builder()
-                .monthlyTrends(trends)
-                .build();
-    }
 
     @Transactional(readOnly = true)
     public UserAnalyticsInsightResponse getInsights(String userId) {
@@ -177,6 +146,21 @@ public class UserAnalyticsService {
                         insights.add("insight_category_dominant:" + entry.getKey());
                     }
                 });
+
+        // Insight 3: Duplicate Categories (Savings Potential)
+        Map<String, Long> categoryCounts = subscriptions.stream()
+                .collect(Collectors.groupingBy(Subscription::getCategory, Collectors.counting()));
+        categoryCounts.forEach((cat, count) -> {
+            if (count >= 2) {
+                insights.add("insight_saving_potential:" + cat);
+            }
+        });
+
+        // Insight 4: Cycle Suggestion (Long term monthly)
+        // For demo, if a user has many monthly (>4), suggest yearly
+        if (monthlyCount > 4) {
+             insights.add("insight_cycle_suggestion");
+        }
 
         if (insights.isEmpty()) {
             insights.add("insight_balanced_spending");

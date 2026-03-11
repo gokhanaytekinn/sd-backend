@@ -17,7 +17,7 @@ import java.util.Map;
 public class UserAnalyticsSummaryResponse {
     private BigDecimal totalMonthlyCost;
     private BigDecimal totalYearlyCost;
-    private BigDecimal dailyAverageCost;
+
     private Map<String, LifetimeMetric> lifetimeSpent;
     private Map<String, BigDecimal> categoryBreakdown;
     private List<CalendarEventDTO> calendarEvents;

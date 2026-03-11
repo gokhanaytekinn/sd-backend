@@ -85,6 +85,7 @@ public class SubscriptionService {
         subscription.setIsSuspicious(false);
         subscription.setIsApproved(false);
         subscription.setReminderEnabled(request.getReminderEnabled() != null ? request.getReminderEnabled() : false);
+        subscription.setIsFreeTrial(request.getIsFreeTrial() != null ? request.getIsFreeTrial() : false);
 
         subscription = subscriptionRepository.save(subscription);
 
@@ -133,6 +134,9 @@ public class SubscriptionService {
         }
         if (request.getReminderEnabled() != null) {
             subscription.setReminderEnabled(request.getReminderEnabled());
+        }
+        if (request.getIsFreeTrial() != null) {
+            subscription.setIsFreeTrial(request.getIsFreeTrial());
         }
 
         subscription = subscriptionRepository.save(subscription);
@@ -349,6 +353,7 @@ public class SubscriptionService {
                 subscription.getReminderEnabled(),
                 isOwner,
                 participants,
+                subscription.getIsFreeTrial(),
                 subscription.getCreatedAt(),
                 subscription.getUpdatedAt());
     }
