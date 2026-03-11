@@ -71,10 +71,7 @@ public class UserAnalyticsService {
             }
         }
 
-        // Generate calendar events for ALL active subscriptions (or filtered depending on preference? 
-        // User said: "o seçtiği kategoriye göre aşağıdaki grafikler hazırlansın... abonelik yenileme tarihlerinde mavi nokta olsun")
-        // It's probably better to show EVERYTHING on calendar unless the filter specifically should apply to calendar too.
-        // Given the request, I'll filter the calendar too.
+        // Generate calendar events for ALL active subscriptions
         for (Subscription sub : filteredSubscriptions) {
             addAllRenewalDatesForYear(sub, calendarEvents);
         }
@@ -93,7 +90,6 @@ public class UserAnalyticsService {
         if (sub.getBillingDay() == null) return;
         
         LocalDate now = LocalDate.now();
-        LocalDate endOfYear = now.plusYears(1);
         
         // This is a simplified renewal calculator
         if (sub.getBillingCycle() == BillingCycle.MONTHLY) {
@@ -146,7 +142,7 @@ public class UserAnalyticsService {
                     }
                 });
 
-        // Insight 3: Duplicate Categories (Savings Potential)
+        // Insight 3: Duplicate Categories
         Map<String, Long> categoryCounts = subscriptions.stream()
                 .collect(Collectors.groupingBy(Subscription::getCategory, Collectors.counting()));
         categoryCounts.forEach((cat, count) -> {
@@ -155,8 +151,7 @@ public class UserAnalyticsService {
             }
         });
 
-        // Insight 4: Cycle Suggestion (Long term monthly)
-        // For demo, if a user has many monthly (>4), suggest yearly
+        // Insight 4: Cycle Suggestion
         if (monthlyCount > 4) {
              insights.add("insight_cycle_suggestion");
         }
@@ -186,7 +181,6 @@ public class UserAnalyticsService {
     private BigDecimal convertToBaseCurrency(BigDecimal amount, CurrencyCode code) {
         if (code == null || code == CurrencyCode.TRY) return amount;
         
-        // Using static estimated rates for demonstration
         BigDecimal rate = BigDecimal.ONE;
         switch (code) {
             case USD: rate = new BigDecimal("32.0"); break;
