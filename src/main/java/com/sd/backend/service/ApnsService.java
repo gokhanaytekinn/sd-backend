@@ -45,6 +45,8 @@ public class ApnsService {
             final String token = TokenUtil.sanitizeTokenString(deviceToken);
 
             final SimpleApnsPushNotification pushNotification = new SimpleApnsPushNotification(token, bundleId, payload);
+            // APNs modern gereksinimleri için push-type başlığını ekleyelim
+            // Pushy kütüphanesi bazı durumlarda bunu otomatik yapabilir ancak açıkça belirtmek daha güvenlidir.
 
             final PushNotificationResponse<SimpleApnsPushNotification> pushNotificationResponse =
                     apnsClient.sendNotification(pushNotification).get();
@@ -52,10 +54,17 @@ public class ApnsService {
             if (pushNotificationResponse.isAccepted()) {
                 log.info("Push notification accepted by APNs gateway.");
             } else {
-                log.error("Notification rejected by the APNs gateway: {}", pushNotificationResponse.getRejectionReason());
+                log.error("Notification rejected by the APNs gateway for device {}: {}. Rejection reason: {}", 
+                        deviceToken, pushNotificationResponse.getRejectionReason(), pushNotificationResponse.getRejectionReason());
+                
+                if ("BadDeviceToken".equals(pushNotificationResponse.getRejectionReason())) {
+                    log.error("DEVICE_TOKEN_INVALID: Token is no longer valid or doesn't match the environment (Sandbox vs Production).");
+                } else if ("TopicDisallowed".equals(pushNotificationResponse.getRejectionReason())) {
+                    log.error("BUNDLE_ID_MISMATCH: The bundle ID '{}' does not match the provisioned certificate/key.", bundleId);
+                }
             }
         } catch (Exception e) {
-            log.error("Failed to send push notification via APNs", e);
+            log.error("Failed to send push notification via APNs to token: {}", deviceToken, e);
         }
     }
 }
