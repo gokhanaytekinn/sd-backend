@@ -35,6 +35,8 @@ public class ApnsConfig {
             ApnsSigningKey signingKey = ApnsSigningKey.loadFromInputStream(keyInputStream, teamId, keyId);
 
             String host = isSandbox ? ApnsClientBuilder.DEVELOPMENT_APNS_HOST : ApnsClientBuilder.PRODUCTION_APNS_HOST;
+            
+            System.out.println("DEBUG: Initializing APNs Client - Sandbox: " + isSandbox + ", Host: " + host + ", BundleId: " + System.getProperty("apns.bundle-id"));
 
             return new ApnsClientBuilder()
                     .setSigningKey(signingKey)
