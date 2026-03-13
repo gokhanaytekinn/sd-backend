@@ -13,7 +13,7 @@ public class DailyEngagementScheduler {
 
     private final NotificationBusinessService notificationBusinessService;
 
-    @Scheduled(cron = "${app.scheduler.daily-engagement.cron:0 36 09 * * ?}", zone = "${app.scheduler.timezone:Europe/Istanbul}")
+    @Scheduled(cron = "${app.scheduler.daily-engagement.cron:0 41 09 * * ?}", zone = "${app.scheduler.timezone:Europe/Istanbul}")
     public void sendDailyEngagementNotifications() {
         log.info("Scheduler Triggered: Daily Engagement Task");
         notificationBusinessService.processDailyEngagementNotifications();
