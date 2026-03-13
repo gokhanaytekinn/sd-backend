@@ -52,10 +52,10 @@ public class ApnsService {
                     apnsClient.sendNotification(pushNotification).get();
 
             if (pushNotificationResponse.isAccepted()) {
-                log.info("Push notification accepted by APNs gateway.");
+                log.info("Push notification accepted by APNs gateway for topic: {}", bundleId);
             } else {
-                log.error("Notification rejected by the APNs gateway for device {}: {}. Rejection reason: {}", 
-                        deviceToken, pushNotificationResponse.getRejectionReason(), pushNotificationResponse.getRejectionReason());
+                log.error("Notification rejected by the APNs gateway for device {} with topic {}: {}. Rejection reason: {}", 
+                        deviceToken, bundleId, pushNotificationResponse.getRejectionReason(), pushNotificationResponse.getRejectionReason());
                 
                 if ("BadDeviceToken".equals(pushNotificationResponse.getRejectionReason())) {
                     log.error("DEVICE_TOKEN_INVALID: Token is no longer valid or doesn't match the environment (Sandbox vs Production).");
