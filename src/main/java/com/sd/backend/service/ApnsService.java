@@ -43,6 +43,9 @@ public class ApnsService {
 
             final String payload = objectMapper.writeValueAsString(payloadMap);
             final String token = TokenUtil.sanitizeTokenString(deviceToken);
+            
+            log.info("Attempting to send APNs notification. Topic: '{}', Topic Length: {}, Token: {}...", 
+                    bundleId, bundleId.length(), token.substring(0, 10));
 
             final SimpleApnsPushNotification pushNotification = new SimpleApnsPushNotification(token, bundleId, payload);
             // APNs modern gereksinimleri için push-type başlığını ekleyelim
