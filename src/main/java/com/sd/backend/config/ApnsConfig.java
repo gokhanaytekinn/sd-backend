@@ -3,6 +3,7 @@ package com.sd.backend.config;
 import com.eatthepath.pushy.apns.ApnsClient;
 import com.eatthepath.pushy.apns.ApnsClientBuilder;
 import com.eatthepath.pushy.apns.auth.ApnsSigningKey;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import org.springframework.core.io.ClassPathResource;
 import java.io.InputStream;
 
 @Configuration
+@Slf4j
 public class ApnsConfig {
 
     @Value("${apns.key-id:PLACEHOLDER_KEY_ID}")
