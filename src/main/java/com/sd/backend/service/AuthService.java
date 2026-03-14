@@ -166,16 +166,26 @@ public class AuthService {
         String name = request.getFirstName() != null ? (request.getFirstName() + " " + (request.getLastName() != null ? request.getLastName() : "")) : null;
 
         // Find existing user or create new one
-        User user = userRepository.findByEmail(email).orElseGet(() -> {
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setName(name != null ? name.trim() : email);
-            newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
-            newUser.setTier(UserTier.FREE);
-            newUser.setLanguage("tr"); // Default language
-            newUser.setNotificationsEnabled(true);
-            return userRepository.save(newUser);
-        });
+        User user = userRepository.findByEmail(email).orElse(null);
+        boolean isNewUser = false;
+
+        if (user == null) {
+            user = new User();
+            user.setEmail(email);
+            user.setName(name != null ? name.trim() : email);
+            user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+            user.setTier(UserTier.FREE);
+            user.setLanguage("tr"); // Default language
+            user.setNotificationsEnabled(true);
+            user = userRepository.save(user);
+            isNewUser = true;
+        }
+
+        // If we found an existing user but we have a name now (and they don't have one or it's just email), update it
+        if (!isNewUser && name != null && (user.getName() == null || user.getName().isEmpty() || user.getName().equalsIgnoreCase(user.getEmail()))) {
+            user.setName(name.trim());
+            user = userRepository.save(user);
+        }
 
         log.info("Apple Sign-In successful for: {}", email);
 
