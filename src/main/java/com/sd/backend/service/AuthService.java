@@ -60,7 +60,7 @@ public class AuthService {
     @Value("${google.client.id}")
     private String googleClientId;
 
-    @Value("${apple.client.id:com.nexus.subify}")
+    @Value("${apple.client.id:com.nexus.sd}")
     private String appleClientId;
 
     @Transactional
@@ -197,20 +197,26 @@ public class AuthService {
 
     private Claims verifyAppleToken(String identityToken) {
         try {
-            // 1. Get kid from header safely
+            // 1. Get kid from header safely without triggering signature verification
             String[] chunks = identityToken.split("\\.");
             if (chunks.length != 3) {
                 throw new BadRequestException("Invalid Apple token format");
             }
 
-            // Using jjwt 0.12.x to parse without verification to get the header
-            // Note: In some versions this might still expect a key if it's a JWS.
-            // A safer way is to manually decode the header chunk.
+            // Manually decode the header to get kid
             String headerJson = new String(Base64.getUrlDecoder().decode(chunks[0]));
-            // We can use a simple regex or manually look for kid if we don't want to bring in Jackson here
-            // But jjwt already uses Jackson/Gson internally.
+            String kid = null;
             
-            String kid = (String) Jwts.parser().build().parse(identityToken).getHeader().get("kid");
+            // Basic regex to find "kid":"..." in header JSON
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\"kid\"\\s*:\\s*\"([^\"]+)\"");
+            java.util.regex.Matcher matcher = pattern.matcher(headerJson);
+            if (matcher.find()) {
+                kid = matcher.group(1);
+            }
+
+            if (kid == null) {
+                throw new BadRequestException("Apple token header does not contain kid");
+            }
 
             // 2. Get Public Key (from cache or Apple)
             PublicKey publicKey = getApplePublicKey(kid);
@@ -225,7 +231,7 @@ public class AuthService {
             // 4. Verify Audience
             String aud = claims.getAudience().iterator().next();
             if (!appleClientId.equals(aud)) {
-                 if (!aud.startsWith("com.nexus.subify")) {
+                 if (!aud.startsWith("com.nexus.")) {
                      log.warn("Apple token audience mismatch. Expected: {}, Got: {}", appleClientId, aud);
                      // throw new UnauthorizedException("Apple token audience mismatch");
                  }
