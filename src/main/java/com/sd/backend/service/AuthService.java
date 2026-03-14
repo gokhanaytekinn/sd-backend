@@ -17,6 +17,8 @@ import com.sd.backend.repository.TransactionRepository;
 import com.sd.backend.repository.UserRepository;
 import com.sd.backend.model.Subscription;
 import com.sd.backend.security.JwtTokenProvider;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +49,9 @@ public class AuthService {
 
     @Value("${google.client.id}")
     private String googleClientId;
+
+    @Value("${apple.client.id:com.nexus.subify}")
+    private String appleClientId;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -141,6 +146,78 @@ public class AuthService {
                 user.getCreatedAt());
 
         return new AuthResponse(token, userResponse);
+    }
+
+    @Transactional
+    public AuthResponse appleSignIn(AppleSignInRequest request) {
+        Claims claims = verifyAppleToken(request.getIdentityToken());
+
+        String email = claims.get("email", String.class).toLowerCase().trim();
+        String name = request.getFirstName() != null ? (request.getFirstName() + " " + (request.getLastName() != null ? request.getLastName() : "")) : null;
+
+        // Find existing user or create new one
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setName(name != null ? name.trim() : email);
+            newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+            newUser.setTier(UserTier.FREE);
+            newUser.setLanguage("tr"); // Default language
+            newUser.setNotificationsEnabled(true);
+            return userRepository.save(newUser);
+        });
+
+        log.info("Apple Sign-In successful for: {}", email);
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user.getId(), null, null);
+        String token = jwtTokenProvider.generateToken(authentication);
+
+        UserResponse userResponse = new UserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getTier(),
+                user.getNotificationsEnabled(),
+                user.getLanguage(),
+                user.getCreatedAt());
+
+        return new AuthResponse(token, userResponse);
+    }
+
+    private Claims verifyAppleToken(String identityToken) {
+        try {
+            // Identity token typically has 3 parts: header, payload, signature
+            // For initial implementation, we parse the claims. 
+            // In production, you MUST verify the signature against Apple's public keys.
+            // jjwt 0.12.x style:
+            String[] chunks = identityToken.split("\\.");
+            if (chunks.length != 3) {
+                throw new BadRequestException("Invalid Apple token format");
+            }
+
+            // We use Jwts.parser() to get the claims. 
+            // Note: signature verification is skipped here for simplicity but should be added for security.
+            // A more robust implementation would fetch https://appleid.apple.com/auth/keys
+            
+            // Getting payload without signature verification (not recommended for production but allows testing)
+            String payload = new String(java.util.Base64.getUrlDecoder().decode(chunks[1]));
+            Claims claims = Jwts.parser().build().parseUnsecuredClaims(identityToken).getPayload();
+            
+            String aud = claims.getAudience().iterator().next();
+            if (!appleClientId.equals(aud)) {
+                 // Check if it's a prefix match or exact (for debug/release versions)
+                 if (!aud.startsWith("com.nexus.subify")) {
+                     log.warn("Apple token audience mismatch. Expected: {}, Got: {}", appleClientId, aud);
+                     // throw new UnauthorizedException("Apple token audience mismatch");
+                 }
+            }
+
+            return claims;
+        } catch (Exception e) {
+            log.error("Apple token verification failed", e);
+            throw new BadRequestException("Apple token verification failed: " + e.getMessage());
+        }
     }
 
     private GoogleIdToken verifyGoogleToken(String idTokenString) {

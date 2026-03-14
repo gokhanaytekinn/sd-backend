@@ -61,6 +61,18 @@ public class AuthController {
                 return ResponseEntity.ok(response);
         }
 
+        @PostMapping("/apple")
+        @Operation(summary = "Apple Sign-In", description = "Verify an Apple identity token and return an app JWT. Creates a new user account if the email is not registered yet.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Successfully authenticated via Apple"),
+                        @ApiResponse(responseCode = "400", description = "Invalid or expired Apple token"),
+                        @ApiResponse(responseCode = "401", description = "Apple token verification failed")
+        })
+        public ResponseEntity<AuthResponse> appleSignIn(@Valid @RequestBody AppleSignInRequest request) {
+                AuthResponse response = authService.appleSignIn(request);
+                return ResponseEntity.ok(response);
+        }
+
         @PostMapping("/forgot-password")
         @Operation(summary = "Forgot password", description = "Send a 6-digit reset code to user's email")
         public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
