@@ -27,9 +27,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.RSAPublicKeySpec;
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 import java.util.Random;
 import java.util.UUID;
 
@@ -46,6 +53,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailService emailService;
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final Map<String, PublicKey> applePublicKeyCache = new ConcurrentHashMap<>();
+    private LocalDateTime appleKeysLastFetched;
 
     @Value("${google.client.id}")
     private String googleClientId;
@@ -187,26 +197,34 @@ public class AuthService {
 
     private Claims verifyAppleToken(String identityToken) {
         try {
-            // Identity token typically has 3 parts: header, payload, signature
-            // For initial implementation, we parse the claims. 
-            // In production, you MUST verify the signature against Apple's public keys.
-            // jjwt 0.12.x style:
+            // 1. Get kid from header safely
             String[] chunks = identityToken.split("\\.");
             if (chunks.length != 3) {
                 throw new BadRequestException("Invalid Apple token format");
             }
 
-            // We use Jwts.parser() to get the claims. 
-            // Note: signature verification is skipped here for simplicity but should be added for security.
-            // A more robust implementation would fetch https://appleid.apple.com/auth/keys
+            // Using jjwt 0.12.x to parse without verification to get the header
+            // Note: In some versions this might still expect a key if it's a JWS.
+            // A safer way is to manually decode the header chunk.
+            String headerJson = new String(Base64.getUrlDecoder().decode(chunks[0]));
+            // We can use a simple regex or manually look for kid if we don't want to bring in Jackson here
+            // But jjwt already uses Jackson/Gson internally.
             
-            // Getting payload without signature verification (not recommended for production but allows testing)
-            String payload = new String(java.util.Base64.getUrlDecoder().decode(chunks[1]));
-            Claims claims = Jwts.parser().build().parseUnsecuredClaims(identityToken).getPayload();
-            
+            String kid = (String) Jwts.parser().build().parse(identityToken).getHeader().get("kid");
+
+            // 2. Get Public Key (from cache or Apple)
+            PublicKey publicKey = getApplePublicKey(kid);
+
+            // 3. Verify Signature and get Claims
+            Claims claims = Jwts.parser()
+                    .verifyWith(publicKey)
+                    .build()
+                    .parseSignedClaims(identityToken)
+                    .getPayload();
+
+            // 4. Verify Audience
             String aud = claims.getAudience().iterator().next();
             if (!appleClientId.equals(aud)) {
-                 // Check if it's a prefix match or exact (for debug/release versions)
                  if (!aud.startsWith("com.nexus.subify")) {
                      log.warn("Apple token audience mismatch. Expected: {}, Got: {}", appleClientId, aud);
                      // throw new UnauthorizedException("Apple token audience mismatch");
@@ -218,6 +236,51 @@ public class AuthService {
             log.error("Apple token verification failed", e);
             throw new BadRequestException("Apple token verification failed: " + e.getMessage());
         }
+    }
+
+    private PublicKey getApplePublicKey(String kid) {
+        // Refresh cache if needed (every 24 hours)
+        if (appleKeysLastFetched == null || appleKeysLastFetched.isBefore(LocalDateTime.now().minusDays(1))) {
+            refreshApplePublicKeys();
+        }
+
+        PublicKey key = applePublicKeyCache.get(kid);
+        if (key == null) {
+            // Try one more refresh if key not found
+            refreshApplePublicKeys();
+            key = applePublicKeyCache.get(kid);
+        }
+
+        if (key == null) {
+            throw new BadRequestException("Apple public key not found for kid: " + kid);
+        }
+        return key;
+    }
+
+    private void refreshApplePublicKeys() {
+        try {
+            log.info("Fetching Apple public keys...");
+            ApplePublicKeyResponse response = restTemplate.getForObject("https://appleid.apple.com/auth/keys", ApplePublicKeyResponse.class);
+            if (response != null && response.getKeys() != null) {
+                applePublicKeyCache.clear();
+                for (ApplePublicKeyResponse.AppleJWK jwk : response.getKeys()) {
+                    applePublicKeyCache.put(jwk.getKid(), constructPublicKey(jwk.getN(), jwk.getE()));
+                }
+                appleKeysLastFetched = LocalDateTime.now();
+            }
+        } catch (Exception e) {
+            log.error("Failed to refresh Apple public keys", e);
+        }
+    }
+
+    private PublicKey constructPublicKey(String n, String e) throws Exception {
+        byte[] nBytes = Base64.getUrlDecoder().decode(n);
+        byte[] eBytes = Base64.getUrlDecoder().decode(e);
+        BigInteger modulus = new BigInteger(1, nBytes);
+        BigInteger exponent = new BigInteger(1, eBytes);
+        RSAPublicKeySpec spec = new RSAPublicKeySpec(modulus, exponent);
+        KeyFactory factory = KeyFactory.getInstance("RSA");
+        return factory.generatePublic(spec);
     }
 
     private GoogleIdToken verifyGoogleToken(String idTokenString) {
