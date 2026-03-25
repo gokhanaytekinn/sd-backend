@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,6 +20,7 @@ public class EmailService {
     @Value("${support.email.to:destek@nxsapps.com}")
     private String supportEmailTo;
 
+    @Async
     public void sendResetCode(String to, String code) {
         log.info("Sıfırlama kodu {} için üretildi: {}", to, code);
 
@@ -39,6 +41,7 @@ public class EmailService {
         }
     }
 
+    @Async
     public void sendInvitationEmail(String to, String inviterName, String subscriptionName) {
         log.info("Davet e-postası {} için gönderiliyor. Davet eden: {}, Abonelik: {}", to, inviterName,
                 subscriptionName);
@@ -60,6 +63,7 @@ public class EmailService {
         }
     }
 
+    @Async
     public void sendSupportTicket(UserPrincipal userPrincipal, String subject, String messageBody) {
         String to = supportEmailTo;
         String safeSubject = subject == null ? "" : subject.trim();
