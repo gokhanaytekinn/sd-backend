@@ -81,11 +81,17 @@ jobs:
             -e MONGODB_URI="${{ secrets.MONGODB_URI }}" \
             -e MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}" \
             -e MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}" \
+            -e MAIL_FROM="${{ secrets.MAIL_FROM }}" \
             -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
             -e GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
             -e CORS_ALLOWED_ORIGINS="${{ secrets.CORS_ALLOWED_ORIGINS }}" \
             -e MAIL_HOST="${{ secrets.MAIL_HOST }}" \
             -e MAIL_PORT="${{ secrets.MAIL_PORT }}" \
+            -e MAIL_SSL_ENABLE="${{ secrets.MAIL_SSL_ENABLE }}" \
+            -e MAIL_STARTTLS_ENABLE="${{ secrets.MAIL_STARTTLS_ENABLE }}" \
+            -e MAIL_CONNECTION_TIMEOUT_MS="${{ secrets.MAIL_CONNECTION_TIMEOUT_MS }}" \
+            -e MAIL_TIMEOUT_MS="${{ secrets.MAIL_TIMEOUT_MS }}" \
+            -e MAIL_WRITE_TIMEOUT_MS="${{ secrets.MAIL_WRITE_TIMEOUT_MS }}" \
             -e FIREBASE_CONFIG_JSON='${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' \
             -e APNS_KEY_ID="${{ secrets.APNS_KEY_ID }}" \
             -e APNS_TEAM_ID="${{ secrets.APNS_TEAM_ID }}" \
