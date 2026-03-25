@@ -17,6 +17,9 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
+    @Value("${spring.mail.from:no-reply@abonelikdedektifi.com}")
+    private String fromEmail;
+
     @Value("${support.email.to:destek@nxsapps.com}")
     private String supportEmailTo;
 
@@ -26,7 +29,7 @@ public class EmailService {
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("no-reply@abonelikdedektifi.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("Şifre Sıfırlama Kodu - Abonelik Dedektifi");
             message.setText("Merhaba,\n\nŞifrenizi sıfırlamak için doğrulama kodunuz: " + code +
@@ -48,7 +51,7 @@ public class EmailService {
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("no-reply@abonelikdedektifi.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("Ortak Abonelik Daveti - Abonelik Dedektifi");
             message.setText("Merhaba,\n\n" + inviterName + " sizi '" + subscriptionName
@@ -71,7 +74,7 @@ public class EmailService {
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("no-reply@abonelikdedektifi.com");
+            message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject("[Subify] " + safeSubject);
 
