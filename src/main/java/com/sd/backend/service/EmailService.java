@@ -3,8 +3,11 @@ package com.sd.backend.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
+
+import com.sd.backend.security.UserPrincipal;
 
 @Service
 @RequiredArgsConstructor
@@ -12,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+
+    @Value("${support.email.to:destek@nxsapps.com}")
+    private String supportEmailTo;
 
     public void sendResetCode(String to, String code) {
         log.info("Sıfırlama kodu {} için üretildi: {}", to, code);
@@ -51,6 +57,33 @@ public class EmailService {
             log.info("Davet e-postası başarıyla gönderildi: {}", to);
         } catch (Exception e) {
             log.error("Davet e-postası gönderimi başarısız oldu: {}", e.getMessage());
+        }
+    }
+
+    public void sendSupportTicket(UserPrincipal userPrincipal, String subject, String messageBody) {
+        String to = supportEmailTo;
+        String safeSubject = subject == null ? "" : subject.trim();
+        String safeMessage = messageBody == null ? "" : messageBody.trim();
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("no-reply@abonelikdedektifi.com");
+            message.setTo(to);
+            message.setSubject("[Subify] " + safeSubject);
+
+            String fullNameWithEmail = userPrincipal != null ? userPrincipal.getFullNameWithEmail() : "Unknown";
+            message.setText(
+                    "Merhaba,\n\n" +
+                            safeMessage +
+                            "\n\n---\n" +
+                            "Kullanıcı: " + fullNameWithEmail +
+                            "\n\n(Subify Destek Ekibi)"
+            );
+
+            mailSender.send(message);
+            log.info("Destek talebi e-postası başarıyla gönderildi. To: {}", to);
+        } catch (Exception e) {
+            log.error("Destek talebi e-postası gönderimi başarısız oldu: {}", e.getMessage());
         }
     }
 }
