@@ -2,8 +2,10 @@ package com.sd.backend.service;
 
 import com.sd.backend.model.Subscription;
 import com.sd.backend.model.User;
+import com.sd.backend.model.NotificationCooldownLog;
 import com.sd.backend.model.enums.SubscriptionStatus;
 import com.sd.backend.repository.SubscriptionRepository;
+import com.sd.backend.repository.NotificationCooldownLogRepository;
 import com.sd.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,10 +15,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,13 +31,20 @@ public class NotificationBusinessService {
 
     private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final NotificationCooldownLogRepository cooldownLogRepository;
     private final NotificationService notificationService;
     private final MessageSource messageSource;
 
     private static final int BATCH_SIZE = 500;
+    private static final String NEW_SUBSCRIPTION_NOTIFICATION_TYPE = "NEW_SUBSCRIPTION";
 
     public void processDailyEngagementNotifications() {
-        log.info("Starting paginated daily engagement notification task...");
+        // Sends "Yeni bir aboneliğiniz var mı?" prompt every 3 days (per-user cooldown).
+        log.info("Starting paginated new-subscription engagement notification task (3-day cooldown)...");
+
+        ZoneId zoneId = ZoneId.of("Europe/Istanbul");
+        LocalDateTime now = LocalDateTime.now(zoneId);
+        LocalDateTime threshold = now.minusDays(3);
 
         int page = 0;
         Page<User> userPage;
@@ -40,30 +53,63 @@ public class NotificationBusinessService {
             userPage = userRepository.findAll(PageRequest.of(page, BATCH_SIZE));
             log.info("Processing daily engagement, page: {}, size: {}", page, userPage.getNumberOfElements());
 
-            for (User user : userPage.getContent()) {
-                sendDailyEngagementToUser(user);
+            List<User> users = userPage.getContent();
+            List<String> userIds = users.stream()
+                    .map(User::getId)
+                    .filter(id -> id != null && !id.isEmpty())
+                    .collect(Collectors.toList());
+
+            Map<String, NotificationCooldownLog> cooldownMap = cooldownLogRepository
+                    .findByUserIdInAndNotificationType(userIds, NEW_SUBSCRIPTION_NOTIFICATION_TYPE)
+                    .stream()
+                    .collect(Collectors.toMap(NotificationCooldownLog::getUserId, log -> log, (a, b) -> a));
+
+            // Update in-memory first, then save only what changed.
+            List<NotificationCooldownLog> toSave = new ArrayList<>();
+
+            for (User user : users) {
+                if (user == null) continue;
+                if (!Boolean.TRUE.equals(user.getNotificationsEnabled())) continue;
+                if (user.getTier() != null && !user.getTier().equals(com.sd.backend.model.enums.UserTier.FREE)) continue;
+
+                NotificationCooldownLog logEntry = cooldownMap.get(user.getId());
+                LocalDateTime lastSentAt = logEntry != null ? logEntry.getLastSentAt() : null;
+                if (lastSentAt != null && lastSentAt.isAfter(threshold)) {
+                    continue; // cooldown not elapsed yet
+                }
+
+                try {
+                    String lang = user.getLanguage() != null ? user.getLanguage() : "tr";
+                    Locale locale = Locale.forLanguageTag(lang);
+
+                    String title = messageSource.getMessage("notification.daily_engagement.title", null, "SD", locale);
+                    String body = messageSource.getMessage("notification.daily_engagement.body", null,
+                            "Yeni bir aboneliğiniz var mı? 👀", locale);
+
+                    Map<String, String> data = new HashMap<>();
+                    data.put("navigate_to", "add_subscription");
+
+                    notificationService.sendNotification(user, title, body, data);
+                    log.info("Sent new-subscription engagement to user {} ({})", user.getId(), lang);
+
+                    if (logEntry == null) {
+                        logEntry = new NotificationCooldownLog(null, user.getId(), NEW_SUBSCRIPTION_NOTIFICATION_TYPE, now);
+                    } else {
+                        logEntry.setLastSentAt(now);
+                    }
+                    toSave.add(logEntry);
+                } catch (Exception e) {
+                    log.error("Failed to send new-subscription engagement notification to user: {}", user.getEmail(), e);
+                }
+            }
+
+            if (!toSave.isEmpty()) {
+                cooldownLogRepository.saveAll(toSave);
             }
             page++;
         } while (userPage.hasNext());
 
-        log.info("Paginated daily engagement notification task completed.");
-    }
-
-    private void sendDailyEngagementToUser(User user) {
-        try {
-            String lang = user.getLanguage() != null ? user.getLanguage() : "tr";
-            Locale locale = Locale.forLanguageTag(lang);
-
-            String title = messageSource.getMessage("notification.daily_engagement.title", null, "SD", locale);
-            String body = messageSource.getMessage("notification.daily_engagement.body", null, "Yeni bir aboneliğiniz var mı? 👀", locale);
-
-            Map<String, String> data = new HashMap<>();
-            data.put("navigate_to", "add_subscription");
-
-            notificationService.sendNotification(user, title, body, data);
-        } catch (Exception e) {
-            log.error("Failed to send daily notification to user: {}", user.getEmail(), e);
-        }
+        log.info("Paginated new-subscription engagement notification task completed.");
     }
 
     public void processSubscriptionReminders() {
