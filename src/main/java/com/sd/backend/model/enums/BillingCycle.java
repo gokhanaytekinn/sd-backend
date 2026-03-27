@@ -7,7 +7,8 @@ public enum BillingCycle {
     MONTHLY(1),
     YEARLY(2),
     WEEKLY(3),
-    QUARTERLY(4);
+    QUARTERLY(4),
+    DAILY(5);
 
     private final int value;
 

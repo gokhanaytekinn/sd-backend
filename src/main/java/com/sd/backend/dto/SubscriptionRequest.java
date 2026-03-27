@@ -35,8 +35,6 @@ public class SubscriptionRequest {
 
     @NotNull(message = "Billing cycle is required")
     private BillingCycle billingCycle;
-
-    @NotNull(message = "Billing day is required")
     private Integer billingDay;
 
     private Integer billingMonth;

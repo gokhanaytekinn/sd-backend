@@ -3,6 +3,7 @@ package com.sd.backend.service;
 import com.sd.backend.model.Subscription;
 import com.sd.backend.model.User;
 import com.sd.backend.model.NotificationCooldownLog;
+import com.sd.backend.model.enums.CurrencyCode;
 import com.sd.backend.model.enums.SubscriptionStatus;
 import com.sd.backend.repository.SubscriptionRepository;
 import com.sd.backend.repository.NotificationCooldownLogRepository;
@@ -169,12 +170,33 @@ public class NotificationBusinessService {
         String defaultBody = isFreeTrial ? "Your trial for " + sub.getName() + " is ending." : "Your subscription for " + sub.getName() + " is renewing.";
 
         String title = messageSource.getMessage(titleKey, new Object[]{sub.getName()}, defaultTitle, locale);
-        String body = messageSource.getMessage(bodyKey, new Object[]{sub.getName(), sub.getAmount(), sub.getCurrency()}, defaultBody, locale);
+        String currencySymbol = resolveCurrencySymbol(sub.getCurrency());
+        String body = messageSource.getMessage(
+                bodyKey,
+                new Object[]{sub.getName(), sub.getAmount(), currencySymbol},
+                defaultBody,
+                locale
+        );
 
         Map<String, String> data = new HashMap<>();
         data.put("navigate_to", isFreeTrial ? "suspicious_subscriptions" : "upcoming_subscriptions");
 
         notificationService.sendNotification(sub.getUser(), title, body, data);
         log.info("Sent localized ({}) reminder to user {} for subscription {}", lang, sub.getUser().getId(), sub.getName());
+    }
+
+    private String resolveCurrencySymbol(CurrencyCode currencyCode) {
+        if (currencyCode == null) return "₺";
+        switch (currencyCode) {
+            case USD: return "$";
+            case EUR: return "€";
+            case GBP: return "£";
+            case RUB: return "₽";
+            case AZN: return "₼";
+            case KZT: return "₸";
+            case TRY:
+            default:
+                return "₺";
+        }
     }
 }

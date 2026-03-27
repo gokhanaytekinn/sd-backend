@@ -8,6 +8,7 @@ import com.sd.backend.exception.ResourceNotFoundException;
 import com.sd.backend.exception.UnauthorizedException;
 import com.sd.backend.model.Subscription;
 import com.sd.backend.model.User;
+import com.sd.backend.model.enums.BillingCycle;
 import com.sd.backend.model.enums.SubscriptionStatus;
 import com.sd.backend.repository.SubscriptionInvitationRepository;
 import com.sd.backend.repository.SubscriptionRepository;
@@ -79,8 +80,19 @@ public class SubscriptionService {
         subscription.setCurrency(request.getCurrency());
         subscription.setBillingCycle(request.getBillingCycle());
         subscription.setStatus(SubscriptionStatus.ACTIVE);
-        subscription.setBillingDay(request.getBillingDay());
-        subscription.setBillingMonth(request.getBillingMonth());
+        BillingCycle createCycle = request.getBillingCycle();
+        Integer createBillingDay = request.getBillingDay();
+        if (createCycle == BillingCycle.DAILY) {
+            createBillingDay = null;
+        } else if (createBillingDay == null) {
+            createBillingDay = createCycle == BillingCycle.WEEKLY
+                    ? 1
+                    : LocalDate.now().getDayOfMonth();
+        } else if (createCycle == BillingCycle.WEEKLY && createBillingDay != null) {
+            createBillingDay = Math.max(1, Math.min(7, createBillingDay));
+        }
+        subscription.setBillingDay(createBillingDay);
+        subscription.setBillingMonth(createCycle == BillingCycle.YEARLY ? request.getBillingMonth() : null);
 
         subscription.setIsSuspicious(false);
         subscription.setIsApproved(false);
@@ -137,6 +149,18 @@ public class SubscriptionService {
         }
         if (request.getIsFreeTrial() != null) {
             subscription.setIsFreeTrial(request.getIsFreeTrial());
+        }
+        
+        BillingCycle updatedCycle = subscription.getBillingCycle();
+        if (updatedCycle == BillingCycle.DAILY) {
+            subscription.setBillingDay(null);
+            subscription.setBillingMonth(null);
+        } else if (updatedCycle == BillingCycle.WEEKLY && subscription.getBillingDay() != null) {
+            int normalizedDay = Math.max(1, Math.min(7, subscription.getBillingDay()));
+            subscription.setBillingDay(normalizedDay);
+            subscription.setBillingMonth(null);
+        } else if (updatedCycle != BillingCycle.YEARLY) {
+            subscription.setBillingMonth(null);
         }
 
         subscription = subscriptionRepository.save(subscription);

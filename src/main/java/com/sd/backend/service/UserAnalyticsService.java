@@ -174,6 +174,7 @@ public class UserAnalyticsService {
             case YEARLY: return amount.divide(new BigDecimal("12"), 4, RoundingMode.HALF_UP);
             case WEEKLY: return amount.multiply(new BigDecimal("4"));
             case QUARTERLY: return amount.divide(new BigDecimal("3"), 4, RoundingMode.HALF_UP);
+            case DAILY: return amount.multiply(new BigDecimal("30"));
             default: return amount;
         }
     }
