@@ -95,23 +95,37 @@ public class Subscription {
     }
 
     public LocalDate getNextRenewalDate() {
-        if (billingDay == null)
-            return null;
         LocalDate now = LocalDate.now();
+        if (billingCycle == BillingCycle.DAILY) {
+            return now;
+        }
+        if (billingCycle == BillingCycle.WEEKLY) {
+            if (billingDay == null) return null;
+            int normalizedToday = now.getDayOfWeek().getValue(); // 1..7 (Mon..Sun)
+            int daysUntil = billingDay - normalizedToday;
+            if (daysUntil < 0) daysUntil += 7;
+            return now.plusDays(daysUntil);
+        }
+        if (billingDay == null) {
+            return null;
+        }
         if (billingCycle == BillingCycle.YEARLY && billingMonth != null) {
-            LocalDate target = LocalDate.of(now.getYear(), billingMonth,
-                    Math.min(billingDay, LocalDate.of(now.getYear(), billingMonth, 1).lengthOfMonth()));
+            LocalDate target = LocalDate.of(
+                    now.getYear(),
+                    billingMonth,
+                    Math.min(billingDay, LocalDate.of(now.getYear(), billingMonth, 1).lengthOfMonth())
+            );
             if (target.isBefore(now)) {
                 target = target.plusYears(1);
             }
             return target;
-        } else {
-            LocalDate target = now.withDayOfMonth(Math.min(billingDay, now.lengthOfMonth()));
-            if (target.isBefore(now)) {
-                target = target.plusMonths(1);
-                target = target.withDayOfMonth(Math.min(billingDay, target.lengthOfMonth()));
-            }
-            return target;
         }
+        LocalDate target = now.withDayOfMonth(Math.min(billingDay, now.lengthOfMonth()));
+        if (target.isBefore(now)) {
+            int monthStep = billingCycle == BillingCycle.QUARTERLY ? 3 : 1;
+            target = target.plusMonths(monthStep);
+            target = target.withDayOfMonth(Math.min(billingDay, target.lengthOfMonth()));
+        }
+        return target;
     }
 }
