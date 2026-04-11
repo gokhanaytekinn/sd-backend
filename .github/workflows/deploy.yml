@@ -68,12 +68,17 @@ jobs:
           # En güncel imajı çek
           sudo docker pull ghcr.io/$REPO_LOWER:latest
           
+          # my-mongo ile aynı kullanıcı tanımlı ağda olmalı; yoksa my-mongo hostname çözülmez (UnknownHostException)
+          sudo docker network create sd-net 2>/dev/null || true
+          sudo docker network connect sd-net my-mongo 2>/dev/null || true
+          
           # Mevcut konteyneri (sd-api) durdur ve sil
           sudo docker stop sd-api || true
           sudo docker rm sd-api || true
           
           # Yeni konteyneri ayağa kaldır (Sizin manuel komutunuzla uyumlu)
           sudo docker run -d \
+            --network sd-net \
             -p 8080:8080 \
             --name sd-api \
             --restart always \
