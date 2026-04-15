@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -97,7 +98,8 @@ public class SubscriptionService {
         subscription.setIsSuspicious(false);
         subscription.setIsApproved(false);
         subscription.setReminderEnabled(request.getReminderEnabled() != null ? request.getReminderEnabled() : false);
-        subscription.setIsFreeTrial(request.getIsFreeTrial() != null ? request.getIsFreeTrial() : false);
+        boolean requestedTrial = request.getIsFreeTrial() != null ? request.getIsFreeTrial() : false;
+        subscription.setIsFreeTrial(isRentOrDuesName(subscription.getName()) ? false : requestedTrial);
 
         subscription = subscriptionRepository.save(subscription);
 
@@ -149,6 +151,9 @@ public class SubscriptionService {
         }
         if (request.getIsFreeTrial() != null) {
             subscription.setIsFreeTrial(request.getIsFreeTrial());
+        }
+        if (isRentOrDuesName(subscription.getName())) {
+            subscription.setIsFreeTrial(false);
         }
         
         BillingCycle updatedCycle = subscription.getBillingCycle();
@@ -380,5 +385,11 @@ public class SubscriptionService {
                 subscription.getIsFreeTrial(),
                 subscription.getCreatedAt(),
                 subscription.getUpdatedAt());
+    }
+
+    private boolean isRentOrDuesName(String name) {
+        if (name == null) return false;
+        String normalized = name.trim().toLowerCase(Locale.ROOT);
+        return normalized.equals("kira") || normalized.equals("aidat");
     }
 }
