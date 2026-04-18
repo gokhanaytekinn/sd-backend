@@ -162,8 +162,8 @@ public class NotificationBusinessService {
         String lang = sub.getUser().getLanguage() != null ? sub.getUser().getLanguage() : "tr";
         Locale locale = Locale.forLanguageTag(lang);
 
-        String titleKey = isFreeTrial ? "notification.freetrial.title" : "notification.reminder.title";
-        String bodyKey = isFreeTrial ? "notification.freetrial.body" : "notification.reminder.body";
+        String titleKey = isFreeTrial ? "notification.freetrial.title" : resolveReminderTitleKey(sub);
+        String bodyKey = isFreeTrial ? "notification.freetrial.body" : resolveReminderBodyKey(sub);
 
         // Provide default generic fallback if property is extremely missing
         String defaultTitle = isFreeTrial ? sub.getName() + " Trial Ending" : sub.getName() + " Subscription";
@@ -183,6 +183,30 @@ public class NotificationBusinessService {
 
         notificationService.sendNotification(sub.getUser(), title, body, data);
         log.info("Sent localized ({}) reminder to user {} for subscription {}", lang, sub.getUser().getId(), sub.getName());
+    }
+
+    private String resolveReminderTitleKey(Subscription sub) {
+        if (isRentShortcut(sub)) return "notification.reminder.rent.title";
+        if (isDuesShortcut(sub)) return "notification.reminder.dues.title";
+        return "notification.reminder.title";
+    }
+
+    private String resolveReminderBodyKey(Subscription sub) {
+        if (isRentShortcut(sub)) return "notification.reminder.rent.body";
+        if (isDuesShortcut(sub)) return "notification.reminder.dues.body";
+        return "notification.reminder.body";
+    }
+
+    private boolean isRentShortcut(Subscription sub) {
+        if (sub == null || sub.getName() == null) return false;
+        String normalized = sub.getName().trim().toLowerCase(Locale.ROOT);
+        return normalized.equals("kira");
+    }
+
+    private boolean isDuesShortcut(Subscription sub) {
+        if (sub == null || sub.getName() == null) return false;
+        String normalized = sub.getName().trim().toLowerCase(Locale.ROOT);
+        return normalized.equals("aidat");
     }
 
     private String resolveCurrencySymbol(CurrencyCode currencyCode) {
