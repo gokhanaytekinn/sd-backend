@@ -94,6 +94,7 @@ public class SubscriptionService {
         }
         subscription.setBillingDay(createBillingDay);
         subscription.setBillingMonth(createCycle == BillingCycle.YEARLY ? request.getBillingMonth() : null);
+        subscription.setEndDate(request.getEndDate());
 
         subscription.setIsSuspicious(false);
         subscription.setIsApproved(false);
@@ -145,6 +146,9 @@ public class SubscriptionService {
         }
         if (request.getBillingMonth() != null) {
             subscription.setBillingMonth(request.getBillingMonth());
+        }
+        if (request.getEndDate() != null) {
+            subscription.setEndDate(request.getEndDate());
         }
         if (request.getReminderEnabled() != null) {
             subscription.setReminderEnabled(request.getReminderEnabled());

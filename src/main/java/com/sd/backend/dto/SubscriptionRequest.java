@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -38,6 +39,8 @@ public class SubscriptionRequest {
     private Integer billingDay;
 
     private Integer billingMonth;
+
+    private LocalDate endDate;
 
     private Boolean reminderEnabled = false;
 
