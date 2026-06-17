@@ -71,7 +71,6 @@ public class NotificationBusinessService {
             for (User user : users) {
                 if (user == null) continue;
                 if (!Boolean.TRUE.equals(user.getNotificationsEnabled())) continue;
-                if (user.getTier() != null && !user.getTier().equals(com.sd.backend.model.enums.UserTier.FREE)) continue;
 
                 NotificationCooldownLog logEntry = cooldownMap.get(user.getId());
                 LocalDateTime lastSentAt = logEntry != null ? logEntry.getLastSentAt() : null;
@@ -131,7 +130,7 @@ public class NotificationBusinessService {
             for (Subscription sub : subscriptionPage.getContent()) {
                 if (sub.getUser() != null) {
                     LocalDate nextRenewal = sub.getNextRenewalDate();
-                    if (nextRenewal != null && !nextRenewal.isBefore(tomorrow.minusDays(1)) && !nextRenewal.isAfter(tomorrow.plusDays(1))) {
+                    if (nextRenewal != null && nextRenewal.equals(tomorrow)) {
                         processReminderForSubscription(sub);
                     }
                 }
